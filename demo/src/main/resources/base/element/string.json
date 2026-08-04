@@ -1,0 +1,10 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "graph-math-engine demo module" },
+    { "name": "EntryAbility_desc", "value": "Interactive graph plotting demo" },
+    { "name": "EntryAbility_label", "value": "Graph Demo" },
+    { "name": "demo_input_placeholder", "value": "输入表达式，如 sin(x) / x^2+y^2=4 / y>x" },
+    { "name": "demo_add_function", "value": "添加函数" },
+    { "name": "demo_dark_mode", "value": "暗色" }
+  ]
+}

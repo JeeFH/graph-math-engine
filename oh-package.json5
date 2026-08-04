@@ -1,0 +1,10 @@
+{
+  "modelVersion": "6.0.0",
+  "description": "GraphMathEngine - HarmonyOS graph math & expression rendering engine (monorepo)",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@ohos/hypium": "1.0.24"
+  },
+  "dynamicDependencies": {}
+}

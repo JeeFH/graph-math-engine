@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "mathkit",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

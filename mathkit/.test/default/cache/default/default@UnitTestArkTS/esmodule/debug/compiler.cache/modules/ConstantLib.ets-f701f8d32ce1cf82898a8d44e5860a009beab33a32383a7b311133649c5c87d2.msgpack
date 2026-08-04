@@ -1,0 +1,1835 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ4a/*
+ * Copyright 2026 graph-math-engine contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * å¸¸æ•°åº“ - å¯æ‰©å±•çš„å¸¸æ•°ç¬¦å·å’Œæ•°å€¼æ˜ å°„
+ * æ”¯æŒæ•°å­¦ã€ç‰©ç†ã€åŒ–å­¦ã€å·¥ç¨‹ç­‰å„é¢†åŸŸçš„å¸¸æ•°
+ *
+ * è®¾è®¡åŽŸåˆ™ï¼š
+ * 1. å¯æ‰©å±•æ€§ï¼šæ”¯æŒåŠ¨æ€æ·»åŠ /åˆ é™¤å¸¸æ•°
+ * 2. ç¬¦å·è¯†åˆ«ï¼šæ”¯æŒ Unicode å­—ç¬¦å’Œå¤åˆç¬¦å·
+ * 3. æ•°å€¼ç²¾åº¦ï¼šä½¿ç”¨é«˜ç²¾åº¦å­—ç¬¦ä¸²è¡¨ç¤º
+ * 4. åˆ†ç±»ç®¡ç†ï¼šæŒ‰é¢†åŸŸåˆ†ç±»ï¼Œä¾¿äºŽæŸ¥è¯¢
+ */
+import { getMathLogger } from './MathLogger';
+/**
+ * å¸¸æ•°åº“ç±»
+ */
+export class ConstantLib {
+    /**
+     * åˆå§‹åŒ–å¸¸æ•°åº“
+     */
+    static initialize() {
+        if (ConstantLib.initialized) {
+            return;
+        }
+        // â”€â”€ æ•°å­¦å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        ConstantLib.addConstant({
+            id: 'pi',
+            symbol: 'Ï€',
+            name: 'åœ†å‘¨çŽ‡',
+            value: '3.14159265358979323846',
+            category: 'math',
+            description: 'Ï€ = 3.14159...'
+        });
+        ConstantLib.addConstant({
+            id: 'e',
+            symbol: 'e',
+            name: 'è‡ªç„¶å¸¸æ•°',
+            value: '2.71828182845904523536',
+            category: 'math',
+            description: 'è‡ªç„¶å¯¹æ•°çš„åº•æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'phi',
+            symbol: 'Ï†',
+            name: 'é»„é‡‘æ¯”ä¾‹',
+            value: '1.61803398874989484820',
+            category: 'math',
+            description: '(1+âˆš5)/2'
+        });
+        ConstantLib.addConstant({
+            id: 'euler',
+            symbol: 'Î³',
+            name: 'æ¬§æ‹‰-é©¬æ­‡ç½—å°¼å¸¸æ•°',
+            value: '0.57721566490153286060',
+            category: 'math',
+            description: 'Eulerâ€“Mascheroni constant'
+        });
+        // ConstantLib.addConstant({
+        //   id: 'catalan',
+        //   symbol: 'G',
+        //   name: 'å¡ç‰¹å…°å¸¸æ•°',
+        //   value: '0.91596559417721901505',
+        //   category: 'math',
+        //   description: 'Catalan\'s constant'
+        // });
+        // â”€â”€ ç‰©ç†å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        ConstantLib.addConstant({
+            id: 'c_light',
+            symbol: 'c',
+            name: 'å…‰é€Ÿ',
+            value: '299792458',
+            unit: 'm/s',
+            category: 'physics',
+            description: 'çœŸç©ºä¸­çš„å…‰é€Ÿ'
+        });
+        ConstantLib.addConstant({
+            id: 'h_planck',
+            symbol: 'h',
+            name: 'æ™®æœ—å…‹å¸¸æ•°',
+            value: '6.62607015e-34',
+            unit: 'JÂ·s',
+            category: 'physics',
+            description: 'é‡å­åŠ›å­¦åŸºæœ¬å¸¸æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'hbar',
+            symbol: 'â„',
+            name: 'çº¦åŒ–æ™®æœ—å…‹',
+            value: '1.054571817e-34',
+            unit: 'JÂ·s',
+            category: 'physics',
+            description: 'h/2Ï€'
+        });
+        ConstantLib.addConstant({
+            id: 'g_grav',
+            symbol: 'g',
+            name: 'é‡åŠ›åŠ é€Ÿåº¦',
+            value: '9.80665',
+            unit: 'm/sÂ²',
+            category: 'physics',
+            description: 'æ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦'
+        });
+        ConstantLib.addConstant({
+            id: 'G_newton',
+            symbol: 'G',
+            name: 'ä¸‡æœ‰å¼•åŠ›å¸¸æ•°',
+            value: '6.67430e-11',
+            unit: 'NÂ·mÂ²/kgÂ²',
+            category: 'physics',
+            description: 'ç‰›é¡¿å¼•åŠ›å¸¸æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'k_boltz',
+            symbol: 'k_B',
+            name: 'çŽ»å°”å…¹æ›¼å¸¸æ•°',
+            value: '1.380649e-23',
+            unit: 'J/K',
+            category: 'physics',
+            description: 'ç»Ÿè®¡åŠ›å­¦åŸºæœ¬å¸¸æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'eps0',
+            symbol: 'Îµâ‚€',
+            name: 'çœŸç©ºä»‹ç”µå¸¸æ•°',
+            value: '8.8541878128e-12',
+            unit: 'F/m',
+            category: 'physics',
+            description: 'ç”µå®¹çŽ‡'
+        });
+        ConstantLib.addConstant({
+            id: 'mu0',
+            symbol: 'Î¼â‚€',
+            name: 'çœŸç©ºç£å¯¼çŽ‡',
+            value: '1.25663706212e-6',
+            unit: 'H/m',
+            category: 'physics',
+            description: 'ç£å¯¼çŽ‡'
+        });
+        ConstantLib.addConstant({
+            id: 'NA',
+            symbol: 'Nâ‚',
+            name: 'é˜¿ä¼åŠ å¾·ç½—æ•°',
+            value: '6.02214076e+23',
+            unit: 'molâ»Â¹',
+            category: 'physics',
+            description: '1 mol ç²’å­æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'R_gas',
+            symbol: 'R',
+            name: 'æ°”ä½“å¸¸æ•°',
+            value: '8.314462618',
+            unit: 'J/(molÂ·K)',
+            category: 'physics',
+            description: 'ç†æƒ³æ°”ä½“å¸¸æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'sigma_sb',
+            symbol: 'Ïƒ',
+            name: 'æ–¯ç‰¹è—©-çŽ»å°”å…¹æ›¼',
+            value: '5.670374419e-8',
+            unit: 'W/(mÂ²Â·Kâ´)',
+            category: 'physics',
+            description: 'è¾å°„å¸¸æ•°'
+        });
+        ConstantLib.addConstant({
+            id: 'm_electron',
+            symbol: 'mâ‚‘',
+            name: 'ç”µå­è´¨é‡',
+            value: '9.1093837015e-31',
+            unit: 'kg',
+            category: 'physics',
+            description: 'ç”µå­é™æ­¢è´¨é‡'
+        });
+        ConstantLib.addConstant({
+            id: 'm_proton',
+            symbol: 'mâ‚š',
+            name: 'è´¨å­è´¨é‡',
+            value: '1.67262192369e-27',
+            unit: 'kg',
+            category: 'physics',
+            description: 'è´¨å­é™æ­¢è´¨é‡'
+        });
+        ConstantLib.addConstant({
+            id: 'm_neutron',
+            symbol: 'mâ‚™',
+            name: 'ä¸­å­è´¨é‡',
+            value: '1.67492749804e-27',
+            unit: 'kg',
+            category: 'physics',
+            description: 'ä¸­å­é™æ­¢è´¨é‡'
+        });
+        ConstantLib.addConstant({
+            id: 'r_bohr',
+            symbol: 'aâ‚€',
+            name: 'çŽ»å°”åŠå¾„',
+            value: '5.29177210903e-11',
+            unit: 'm',
+            category: 'physics',
+            description: 'æ°¢åŽŸå­åŸºæ€è½¨é“åŠå¾„'
+        });
+        // â”€â”€ åŒ–å­¦å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        ConstantLib.addConstant({
+            id: 'atm',
+            symbol: 'atm',
+            name: 'æ ‡å‡†å¤§æ°”åŽ‹',
+            value: '101325',
+            unit: 'Pa',
+            category: 'chemistry',
+            description: '1æ ‡å‡†å¤§æ°”åŽ‹'
+        });
+        ConstantLib.addConstant({
+            id: 'stp_T',
+            symbol: 'Tâ‚€',
+            name: 'æ ‡å‡†æ¸©åº¦',
+            value: '273.15',
+            unit: 'K',
+            category: 'chemistry',
+            description: '0Â°C è½¬ K'
+        });
+        ConstantLib.addConstant({
+            id: 'water_mw',
+            symbol: 'M(Hâ‚‚O)',
+            name: 'æ°´çš„æ‘©å°”è´¨é‡',
+            value: '18.01528',
+            unit: 'g/mol',
+            category: 'chemistry',
+            description: 'Hâ‚‚O åˆ†å­é‡'
+        });
+        ConstantLib.addConstant({
+            id: 'c_water',
+            symbol: 'câ‚š(Hâ‚‚O)',
+            name: 'æ°´æ¯”çƒ­å®¹',
+            value: '4186',
+            unit: 'J/(kgÂ·K)',
+            category: 'chemistry',
+            description: 'æ¶²æ€æ°´æ¯”çƒ­å®¹'
+        });
+        ConstantLib.addConstant({
+            id: 'faraday',
+            symbol: 'F',
+            name: 'æ³•æ‹‰ç¬¬å¸¸æ•°',
+            value: '96485.33212',
+            unit: 'C/mol',
+            category: 'chemistry',
+            description: '1mol ç”µå­çš„ç”µè·é‡'
+        });
+        ConstantLib.addConstant({
+            id: 'ryd',
+            symbol: 'Râˆž',
+            name: 'é‡Œå¾·å ¡å¸¸æ•°',
+            value: '10973731.568',
+            unit: 'mâ»Â¹',
+            category: 'chemistry',
+            description: 'åŽŸå­å…‰è°±å¸¸æ•°'
+        });
+        ConstantLib.initialized = true;
+        getMathLogger().info('[ConstantLib] å¸¸æ•°åº“åˆå§‹åŒ–å®Œæˆï¼Œå…±åŠ è½½ ' + ConstantLib.constants.size + ' ä¸ªå¸¸æ•°');
+    }
+    /**
+     * æ·»åŠ å¸¸æ•°åˆ°åº“ä¸­
+     */
+    static addConstant(entry) {
+        // æ£€æŸ¥é‡å¤ç¬¦å·
+        if (ConstantLib.constants.has(entry.symbol)) {
+            getMathLogger().warn(`[ConstantLib] ç¬¦å· "${entry.symbol}" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–`);
+        }
+        // æ£€æŸ¥é‡å¤ ID
+        if (ConstantLib.idMap.has(entry.id)) {
+            getMathLogger().warn(`[ConstantLib] ID "${entry.id}" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–`);
+        }
+        ConstantLib.constants.set(entry.symbol, entry);
+        ConstantLib.idMap.set(entry.id, entry);
+    }
+    /**
+     * ä»Žåº“ä¸­åˆ é™¤å¸¸æ•°
+     */
+    static removeConstant(symbol) {
+        const entry = ConstantLib.constants.get(symbol);
+        if (entry) {
+            ConstantLib.constants.delete(symbol);
+            ConstantLib.idMap.delete(entry.id);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * æ ¹æ®ç¬¦å·èŽ·å–å¸¸æ•°æ¡ç›®
+     */
+    static getConstant(symbol) {
+        return ConstantLib.constants.get(symbol);
+    }
+    /**
+     * æ ¹æ® ID èŽ·å–å¸¸æ•°æ¡ç›®
+     */
+    static getConstantById(id) {
+        return ConstantLib.idMap.get(id);
+    }
+    /**
+     * èŽ·å–æ‰€æœ‰å¸¸æ•°ç¬¦å·åˆ—è¡¨
+     */
+    static getAllSymbols() {
+        return Array.from(ConstantLib.constants.keys());
+    }
+    /**
+     * èŽ·å–æ‰€æœ‰å¸¸æ•°æ¡ç›®
+     */
+    static getAllConstants() {
+        return Array.from(ConstantLib.constants.values());
+    }
+    /**
+     * æŒ‰åˆ†ç±»èŽ·å–å¸¸æ•°æ¡ç›®
+     */
+    static getConstantsByCategory(category) {
+        return ConstantLib.getAllConstants().filter(entry => entry.category === category);
+    }
+    /**
+     * æ£€æŸ¥ç¬¦å·æ˜¯å¦ä¸ºå¸¸æ•°
+     */
+    static isConstant(symbol) {
+        return ConstantLib.constants.has(symbol);
+    }
+    /**
+     * èŽ·å–å¸¸æ•°å€¼ï¼ˆæ•°å€¼å­—ç¬¦ä¸²ï¼‰
+     */
+    static getConstantValue(symbol) {
+        const entry = ConstantLib.getConstant(symbol);
+        return entry?.value;
+    }
+    /**
+     * åœ¨è¡¨è¾¾å¼ä¸­æ›¿æ¢æ‰€æœ‰å¸¸æ•°ç¬¦å·ä¸ºæ•°å€¼
+     */
+    static replaceConstantsInExpression(expr) {
+        let result = expr;
+        // æŒ‰ç¬¦å·é•¿åº¦ä»Žé•¿åˆ°çŸ­æŽ’åºï¼Œé¿å…éƒ¨åˆ†åŒ¹é…é—®é¢˜
+        const symbols = ConstantLib.getAllSymbols().sort((a, b) => b.length - a.length);
+        // å¯¹äºŽæ¯ä¸ªå¸¸æ•°ç¬¦å·ï¼Œæž„å»ºæ­£ç¡®çš„è¾¹ç•ŒåŒ¹é…
+        for (const symbol of symbols) {
+            const value = ConstantLib.getConstantValue(symbol);
+            if (value) {
+                const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // æž„å»ºè¾¹ç•Œï¼šç¬¦å·å‰ä¸èƒ½æ˜¯å­—æ¯æ•°å­—ï¼ˆé™¤éžæ˜¯è¿ç®—ç¬¦æˆ–ç©ºæ ¼ï¼‰
+                // ç¬¦å·åŽä¸èƒ½æ˜¯å­—æ¯æ•°å­—ï¼ˆé™¤éžæ˜¯è¿ç®—ç¬¦æˆ–ç©ºæ ¼ï¼‰
+                // ä½¿ç”¨è´Ÿå‘é¢„æµ‹ç¡®ä¿å®Œæ•´åŒ¹é…
+                let boundaryPattern = `(?<![a-zA-Z0-9.])${escaped}(?![a-zA-Z0-9])`;
+                try {
+                    const regex = new RegExp(boundaryPattern, 'g');
+                    result = result.replace(regex, value);
+                }
+                catch (e) {
+                    getMathLogger().warn(`[ConstantLib] æ­£åˆ™è¡¨è¾¾å¼é”™è¯¯ for ${symbol}: ${e}`);
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * èŽ·å–æ‰€æœ‰å¸¸æ•°åˆ†ç±»
+     */
+    static getAllCategories() {
+        const categories = new Set();
+        for (const entry of ConstantLib.getAllConstants()) {
+            categories.add(entry.category);
+        }
+        return Array.from(categories);
+    }
+    /**
+     * æ¸…ç†å¸¸æ•°åº“
+     */
+    static clear() {
+        ConstantLib.constants.clear();
+        ConstantLib.idMap.clear();
+        ConstantLib.initialized = false;
+    }
+}
+// å¸¸æ•°æ˜ å°„è¡¨ï¼šç¬¦å· -> å¸¸æ•°æ¡ç›®
+ConstantLib.constants = new Map();
+// æ ‡è¯†ç¬¦æ˜ å°„è¡¨ï¼šid -> å¸¸æ•°æ¡ç›®ï¼ˆç”¨äºŽå¿«é€ŸæŸ¥æ‰¾ï¼‰
+ConstantLib.idMap = new Map();
+// æ˜¯å¦å·²åˆå§‹åŒ–
+ConstantLib.initialized = false;
+//# sourceMappingURL=ConstantLib.js.mapÂ‘ÙVD:\HMProject\CalculatorV0_1\graph-math-engine\mathkit\src\main\ets\math\MathLogger.etsÙWD:\HMProject\CalculatorV0_1\graph-math-engine\mathkit\src\main\ets\math\ConstantLib.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¯hostModulesInfo§mathkitÃÂÙ5D:\HMProject\CalculatorV0_1\graph-math-engine\mathkitÙ-D:\HMProject\CalculatorV0_1\graph-math-engine§mathkit¥0.1.0Ô  Ù5D:\HMProject\CalculatorV0_1\graph-math-engine\mathkitÃ’ÔrC’²hostDependencyName®hostModuleName¿./src/main/ets/math/ConstantLib§mathkitC­./ConstantLib§mathkitÃÚ1W/*
+ * Copyright 2026 graph-math-engine contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * å¸¸æ•°åº“ - å¯æ‰©å±•çš„å¸¸æ•°ç¬¦å·å’Œæ•°å€¼æ˜ å°„
+ * æ”¯æŒæ•°å­¦ã€ç‰©ç†ã€åŒ–å­¦ã€å·¥ç¨‹ç­‰å„é¢†åŸŸçš„å¸¸æ•°
+ *
+ * è®¾è®¡åŽŸåˆ™ï¼š
+ * 1. å¯æ‰©å±•æ€§ï¼šæ”¯æŒåŠ¨æ€æ·»åŠ /åˆ é™¤å¸¸æ•°
+ * 2. ç¬¦å·è¯†åˆ«ï¼šæ”¯æŒ Unicode å­—ç¬¦å’Œå¤åˆç¬¦å·
+ * 3. æ•°å€¼ç²¾åº¦ï¼šä½¿ç”¨é«˜ç²¾åº¦å­—ç¬¦ä¸²è¡¨ç¤º
+ * 4. åˆ†ç±»ç®¡ç†ï¼šæŒ‰é¢†åŸŸåˆ†ç±»ï¼Œä¾¿äºŽæŸ¥è¯¢
+ */
+
+import { getMathLogger } from './MathLogger';
+
+export interface ConstantEntry {
+  /** å¸¸æ•°å”¯ä¸€æ ‡è¯†ç¬¦ */
+  id: string;
+  /** æ˜¾ç¤ºç¬¦å·ï¼ˆå¦‚ Ï€, Ï†, â„ï¼‰ */
+  symbol: string;
+  /** å¸¸æ•°åç§° */
+  name: string;
+  /** æ•°å€¼å­—ç¬¦ä¸²ï¼ˆé«˜ç²¾åº¦ï¼‰ */
+  value: string;
+  /** åˆ†ç±»ï¼šmath, physics, chemistry, engineering */
+  category: string;
+  /** å•ä½ï¼ˆå¦‚ "m/s", "JÂ·s"ï¼‰ */
+  unit?: string;
+  /** æè¿°ä¿¡æ¯ */
+  description?: string;
+}
+
+/**
+ * å¸¸æ•°åº“ç±»
+ */
+export class ConstantLib {
+  // å¸¸æ•°æ˜ å°„è¡¨ï¼šç¬¦å· -> å¸¸æ•°æ¡ç›®
+  private static constants: Map<string, ConstantEntry> = new Map();
+  // æ ‡è¯†ç¬¦æ˜ å°„è¡¨ï¼šid -> å¸¸æ•°æ¡ç›®ï¼ˆç”¨äºŽå¿«é€ŸæŸ¥æ‰¾ï¼‰
+  private static idMap: Map<string, ConstantEntry> = new Map();
+  // æ˜¯å¦å·²åˆå§‹åŒ–
+  private static initialized: boolean = false;
+
+  /**
+   * åˆå§‹åŒ–å¸¸æ•°åº“
+   */
+  public static initialize(): void {
+    if (ConstantLib.initialized) {
+      return;
+    }
+
+    // â”€â”€ æ•°å­¦å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    ConstantLib.addConstant({
+      id: 'pi',
+      symbol: 'Ï€',
+      name: 'åœ†å‘¨çŽ‡',
+      value: '3.14159265358979323846',
+      category: 'math',
+      description: 'Ï€ = 3.14159...'
+    });
+
+    ConstantLib.addConstant({
+      id: 'e',
+      symbol: 'e',
+      name: 'è‡ªç„¶å¸¸æ•°',
+      value: '2.71828182845904523536',
+      category: 'math',
+      description: 'è‡ªç„¶å¯¹æ•°çš„åº•æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'phi',
+      symbol: 'Ï†',
+      name: 'é»„é‡‘æ¯”ä¾‹',
+      value: '1.61803398874989484820',
+      category: 'math',
+      description: '(1+âˆš5)/2'
+    });
+
+    ConstantLib.addConstant({
+      id: 'euler',
+      symbol: 'Î³',
+      name: 'æ¬§æ‹‰-é©¬æ­‡ç½—å°¼å¸¸æ•°',
+      value: '0.57721566490153286060',
+      category: 'math',
+      description: 'Eulerâ€“Mascheroni constant'
+    });
+
+    // ConstantLib.addConstant({
+    //   id: 'catalan',
+    //   symbol: 'G',
+    //   name: 'å¡ç‰¹å…°å¸¸æ•°',
+    //   value: '0.91596559417721901505',
+    //   category: 'math',
+    //   description: 'Catalan\'s constant'
+    // });
+
+    // â”€â”€ ç‰©ç†å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    ConstantLib.addConstant({
+      id: 'c_light',
+      symbol: 'c',
+      name: 'å…‰é€Ÿ',
+      value: '299792458',
+      unit: 'm/s',
+      category: 'physics',
+      description: 'çœŸç©ºä¸­çš„å…‰é€Ÿ'
+    });
+
+    ConstantLib.addConstant({
+      id: 'h_planck',
+      symbol: 'h',
+      name: 'æ™®æœ—å…‹å¸¸æ•°',
+      value: '6.62607015e-34',
+      unit: 'JÂ·s',
+      category: 'physics',
+      description: 'é‡å­åŠ›å­¦åŸºæœ¬å¸¸æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'hbar',
+      symbol: 'â„',
+      name: 'çº¦åŒ–æ™®æœ—å…‹',
+      value: '1.054571817e-34',
+      unit: 'JÂ·s',
+      category: 'physics',
+      description: 'h/2Ï€'
+    });
+
+    ConstantLib.addConstant({
+      id: 'g_grav',
+      symbol: 'g',
+      name: 'é‡åŠ›åŠ é€Ÿåº¦',
+      value: '9.80665',
+      unit: 'm/sÂ²',
+      category: 'physics',
+      description: 'æ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦'
+    });
+
+    ConstantLib.addConstant({
+      id: 'G_newton',
+      symbol: 'G',
+      name: 'ä¸‡æœ‰å¼•åŠ›å¸¸æ•°',
+      value: '6.67430e-11',
+      unit: 'NÂ·mÂ²/kgÂ²',
+      category: 'physics',
+      description: 'ç‰›é¡¿å¼•åŠ›å¸¸æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'k_boltz',
+      symbol: 'k_B',
+      name: 'çŽ»å°”å…¹æ›¼å¸¸æ•°',
+      value: '1.380649e-23',
+      unit: 'J/K',
+      category: 'physics',
+      description: 'ç»Ÿè®¡åŠ›å­¦åŸºæœ¬å¸¸æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'eps0',
+      symbol: 'Îµâ‚€',
+      name: 'çœŸç©ºä»‹ç”µå¸¸æ•°',
+      value: '8.8541878128e-12',
+      unit: 'F/m',
+      category: 'physics',
+      description: 'ç”µå®¹çŽ‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'mu0',
+      symbol: 'Î¼â‚€',
+      name: 'çœŸç©ºç£å¯¼çŽ‡',
+      value: '1.25663706212e-6',
+      unit: 'H/m',
+      category: 'physics',
+      description: 'ç£å¯¼çŽ‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'NA',
+      symbol: 'Nâ‚',
+      name: 'é˜¿ä¼åŠ å¾·ç½—æ•°',
+      value: '6.02214076e+23',
+      unit: 'molâ»Â¹',
+      category: 'physics',
+      description: '1 mol ç²’å­æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'R_gas',
+      symbol: 'R',
+      name: 'æ°”ä½“å¸¸æ•°',
+      value: '8.314462618',
+      unit: 'J/(molÂ·K)',
+      category: 'physics',
+      description: 'ç†æƒ³æ°”ä½“å¸¸æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'sigma_sb',
+      symbol: 'Ïƒ',
+      name: 'æ–¯ç‰¹è—©-çŽ»å°”å…¹æ›¼',
+      value: '5.670374419e-8',
+      unit: 'W/(mÂ²Â·Kâ´)',
+      category: 'physics',
+      description: 'è¾å°„å¸¸æ•°'
+    });
+
+    ConstantLib.addConstant({
+      id: 'm_electron',
+      symbol: 'mâ‚‘',
+      name: 'ç”µå­è´¨é‡',
+      value: '9.1093837015e-31',
+      unit: 'kg',
+      category: 'physics',
+      description: 'ç”µå­é™æ­¢è´¨é‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'm_proton',
+      symbol: 'mâ‚š',
+      name: 'è´¨å­è´¨é‡',
+      value: '1.67262192369e-27',
+      unit: 'kg',
+      category: 'physics',
+      description: 'è´¨å­é™æ­¢è´¨é‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'm_neutron',
+      symbol: 'mâ‚™',
+      name: 'ä¸­å­è´¨é‡',
+      value: '1.67492749804e-27',
+      unit: 'kg',
+      category: 'physics',
+      description: 'ä¸­å­é™æ­¢è´¨é‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'r_bohr',
+      symbol: 'aâ‚€',
+      name: 'çŽ»å°”åŠå¾„',
+      value: '5.29177210903e-11',
+      unit: 'm',
+      category: 'physics',
+      description: 'æ°¢åŽŸå­åŸºæ€è½¨é“åŠå¾„'
+    });
+
+    // â”€â”€ åŒ–å­¦å¸¸æ•° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    ConstantLib.addConstant({
+      id: 'atm',
+      symbol: 'atm',
+      name: 'æ ‡å‡†å¤§æ°”åŽ‹',
+      value: '101325',
+      unit: 'Pa',
+      category: 'chemistry',
+      description: '1æ ‡å‡†å¤§æ°”åŽ‹'
+    });
+
+    ConstantLib.addConstant({
+      id: 'stp_T',
+      symbol: 'Tâ‚€',
+      name: 'æ ‡å‡†æ¸©åº¦',
+      value: '273.15',
+      unit: 'K',
+      category: 'chemistry',
+      description: '0Â°C è½¬ K'
+    });
+
+    ConstantLib.addConstant({
+      id: 'water_mw',
+      symbol: 'M(Hâ‚‚O)',
+      name: 'æ°´çš„æ‘©å°”è´¨é‡',
+      value: '18.01528',
+      unit: 'g/mol',
+      category: 'chemistry',
+      description: 'Hâ‚‚O åˆ†å­é‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'c_water',
+      symbol: 'câ‚š(Hâ‚‚O)',
+      name: 'æ°´æ¯”çƒ­å®¹',
+      value: '4186',
+      unit: 'J/(kgÂ·K)',
+      category: 'chemistry',
+      description: 'æ¶²æ€æ°´æ¯”çƒ­å®¹'
+    });
+
+    ConstantLib.addConstant({
+      id: 'faraday',
+      symbol: 'F',
+      name: 'æ³•æ‹‰ç¬¬å¸¸æ•°',
+      value: '96485.33212',
+      unit: 'C/mol',
+      category: 'chemistry',
+      description: '1mol ç”µå­çš„ç”µè·é‡'
+    });
+
+    ConstantLib.addConstant({
+      id: 'ryd',
+      symbol: 'Râˆž',
+      name: 'é‡Œå¾·å ¡å¸¸æ•°',
+      value: '10973731.568',
+      unit: 'mâ»Â¹',
+      category: 'chemistry',
+      description: 'åŽŸå­å…‰è°±å¸¸æ•°'
+    });
+
+    ConstantLib.initialized = true;
+    getMathLogger().info('[ConstantLib] å¸¸æ•°åº“åˆå§‹åŒ–å®Œæˆï¼Œå…±åŠ è½½ ' + ConstantLib.constants.size + ' ä¸ªå¸¸æ•°');
+  }
+
+  /**
+   * æ·»åŠ å¸¸æ•°åˆ°åº“ä¸­
+   */
+  public static addConstant(entry: ConstantEntry): void {
+    // æ£€æŸ¥é‡å¤ç¬¦å·
+    if (ConstantLib.constants.has(entry.symbol)) {
+      getMathLogger().warn(`[ConstantLib] ç¬¦å· "${entry.symbol}" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–`);
+    }
+
+    // æ£€æŸ¥é‡å¤ ID
+    if (ConstantLib.idMap.has(entry.id)) {
+      getMathLogger().warn(`[ConstantLib] ID "${entry.id}" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–`);
+    }
+    
+    ConstantLib.constants.set(entry.symbol, entry);
+    ConstantLib.idMap.set(entry.id, entry);
+  }
+
+  /**
+   * ä»Žåº“ä¸­åˆ é™¤å¸¸æ•°
+   */
+  public static removeConstant(symbol: string): boolean {
+    const entry = ConstantLib.constants.get(symbol);
+    if (entry) {
+      ConstantLib.constants.delete(symbol);
+      ConstantLib.idMap.delete(entry.id);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * æ ¹æ®ç¬¦å·èŽ·å–å¸¸æ•°æ¡ç›®
+   */
+  public static getConstant(symbol: string): ConstantEntry | undefined {
+    return ConstantLib.constants.get(symbol);
+  }
+
+  /**
+   * æ ¹æ® ID èŽ·å–å¸¸æ•°æ¡ç›®
+   */
+  public static getConstantById(id: string): ConstantEntry | undefined {
+    return ConstantLib.idMap.get(id);
+  }
+
+  /**
+   * èŽ·å–æ‰€æœ‰å¸¸æ•°ç¬¦å·åˆ—è¡¨
+   */
+  public static getAllSymbols(): string[] {
+    return Array.from(ConstantLib.constants.keys());
+  }
+
+  /**
+   * èŽ·å–æ‰€æœ‰å¸¸æ•°æ¡ç›®
+   */
+  public static getAllConstants(): ConstantEntry[] {
+    return Array.from(ConstantLib.constants.values());
+  }
+
+  /**
+   * æŒ‰åˆ†ç±»èŽ·å–å¸¸æ•°æ¡ç›®
+   */
+  public static getConstantsByCategory(category: string): ConstantEntry[] {
+    return ConstantLib.getAllConstants().filter(entry => entry.category === category);
+  }
+
+  /**
+   * æ£€æŸ¥ç¬¦å·æ˜¯å¦ä¸ºå¸¸æ•°
+   */
+  public static isConstant(symbol: string): boolean {
+    return ConstantLib.constants.has(symbol);
+  }
+
+  /**
+   * èŽ·å–å¸¸æ•°å€¼ï¼ˆæ•°å€¼å­—ç¬¦ä¸²ï¼‰
+   */
+  public static getConstantValue(symbol: string): string | undefined {
+    const entry = ConstantLib.getConstant(symbol);
+    return entry?.value;
+  }
+
+  /**
+   * åœ¨è¡¨è¾¾å¼ä¸­æ›¿æ¢æ‰€æœ‰å¸¸æ•°ç¬¦å·ä¸ºæ•°å€¼
+   */
+  public static replaceConstantsInExpression(expr: string): string {
+    let result = expr;
+    
+    // æŒ‰ç¬¦å·é•¿åº¦ä»Žé•¿åˆ°çŸ­æŽ’åºï¼Œé¿å…éƒ¨åˆ†åŒ¹é…é—®é¢˜
+    const symbols = ConstantLib.getAllSymbols().sort((a, b) => b.length - a.length);
+    
+    // å¯¹äºŽæ¯ä¸ªå¸¸æ•°ç¬¦å·ï¼Œæž„å»ºæ­£ç¡®çš„è¾¹ç•ŒåŒ¹é…
+    for (const symbol of symbols) {
+      const value = ConstantLib.getConstantValue(symbol);
+      if (value) {
+        const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
+        // æž„å»ºè¾¹ç•Œï¼šç¬¦å·å‰ä¸èƒ½æ˜¯å­—æ¯æ•°å­—ï¼ˆé™¤éžæ˜¯è¿ç®—ç¬¦æˆ–ç©ºæ ¼ï¼‰
+        // ç¬¦å·åŽä¸èƒ½æ˜¯å­—æ¯æ•°å­—ï¼ˆé™¤éžæ˜¯è¿ç®—ç¬¦æˆ–ç©ºæ ¼ï¼‰
+        // ä½¿ç”¨è´Ÿå‘é¢„æµ‹ç¡®ä¿å®Œæ•´åŒ¹é…
+        let boundaryPattern = `(?<![a-zA-Z0-9.])${escaped}(?![a-zA-Z0-9])`;
+        
+        try {
+          const regex = new RegExp(boundaryPattern, 'g');
+          result = result.replace(regex, value);
+        } catch (e) {
+          getMathLogger().warn(`[ConstantLib] æ­£åˆ™è¡¨è¾¾å¼é”™è¯¯ for ${symbol}: ${e}`);
+        }
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+   * èŽ·å–æ‰€æœ‰å¸¸æ•°åˆ†ç±»
+   */
+  public static getAllCategories(): string[] {
+    const categories = new Set<string>();
+    for (const entry of ConstantLib.getAllConstants()) {
+      categories.add(entry.category);
+    }
+    return Array.from(categories);
+  }
+
+  /**
+   * æ¸…ç†å¸¸æ•°åº“
+   */
+  public static clear(): void {
+    ConstantLib.constants.clear();
+    ConstantLib.idMap.clear();
+    ConstantLib.initialized = false;
+  }
+}ÀÔrD‘¬./MathLoggerÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÂÙVD:\HMProject\CalculatorV0_1\graph-math-engine\mathkit\src\main\ets\math\MathLogger.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings®ConstantLib.js ‘¯ConstantLib.etsÜŠ‘”    ‘” ‘”   ‘” ˜”   ” ”	 	” ” ” ”, ,”- -‘”  . ‘” 0””  1 ” 1” 1” 1‘” 9‘” ;”” <	”
+ <” <” <–” =” =” =” =”# =”% =!’” >” >‘”	 ?’” ÌA”ÌH ÌAÌD•” ÌB” ÌB” ÌB” ÌB”  ÌB”” ÌC” ÌC” ÌC
+” ÌC”” ÌD” ÌD” ÌD” ÌD”” ÌE” ÌE
+” ÌE” ÌE”” ÌF” ÌF” ÌF”+ ÌF%”” ÌG” ÌG” ÌG” ÌG”” ÌH” ÌH” ÌH”) ÌH#“”	 ÌI”
+ ÌI” ÌI•” ÌK” ÌK” ÌK” ÌK”  ÌK”” ÌL” ÌL” ÌL
+” ÌL”” ÌM” ÌM” ÌM” ÌM”” ÌN” ÌN
+” ÌN” ÌN”” ÌO” ÌO” ÌO”+ ÌO%”” ÌP” ÌP” ÌP” ÌP”” ÌQ” ÌQ” ÌQ”" ÌQ“”	 ÌR”
+ ÌR” ÌR•” ÌT” ÌT” ÌT” ÌT”  ÌT”” ÌU” ÌU” ÌU
+” ÌU”” ÌV” ÌV” ÌV” ÌV”” ÌW” ÌW
+” ÌW” ÌW”” ÌX” ÌX” ÌX”+ ÌX%”” ÌY” ÌY” ÌY” ÌY”” ÌZ” ÌZ” ÌZ”# ÌZ“”	 Ì[”
+ Ì[” Ì[•” Ì]” Ì]” Ì]” Ì]”  Ì]”” Ì^” Ì^” Ì^
+” Ì^”” Ì_” Ì_” Ì_” Ì_”” Ì`” Ì`
+” Ì`” Ì`”” Ìa” Ìa” Ìa”+ Ìa%”” Ìb” Ìb” Ìb” Ìb”” Ìc” Ìc” Ìc”4 Ìc.“”	 Ìd”
+ Ìd” Ìd’” Ìf”$ Ìf ’” Ìg” Ìg’” Ìh” Ìh’” Ìi” Ìi’” Ìj”- Ìj)’” Ìk” Ìk’” Ìl”/ Ìl+’” Ìm” Ìm
+’” Ìo”ÌH ÌoÌD•” Ìp” Ìp” Ìp” Ìp”  Ìp”” Ìq” Ìq” Ìq
+” Ìq”” Ìr” Ìr” Ìr” Ìr”” Ìs” Ìs
+” Ìs” Ìs”” Ìt” Ìt” Ìt” Ìt”” Ìu” Ìu
+” Ìu” Ìu”” Ìv” Ìv” Ìv” Ìv”” Ìw” Ìw” Ìw”! Ìw“”	 Ìx”
+ Ìx” Ìx•” Ìz” Ìz” Ìz” Ìz”  Ìz”” Ì{” Ì{” Ì{
+” Ì{”” Ì|” Ì|” Ì|” Ì|”” Ì}” Ì}
+” Ì}” Ì}”” Ì~” Ì~” Ì~”# Ì~”” Ì” Ì
+” Ì” Ì”” Ì€” Ì€” Ì€” Ì€”” Ì” Ì” Ì”# Ì“”	 Ì‚”
+ Ì‚” Ì‚•” Ì„” Ì„” Ì„” Ì„”  Ì„”” Ì…” Ì…” Ì…
+” Ì…”” Ì†” Ì†” Ì†” Ì†”” Ì‡” Ì‡
+” Ì‡” Ì‡”” Ìˆ” Ìˆ” Ìˆ”$ Ìˆ”” Ì‰” Ì‰
+” Ì‰” Ì‰”” ÌŠ” ÌŠ” ÌŠ” ÌŠ”” Ì‹” Ì‹” Ì‹” Ì‹“”	 ÌŒ”
+ ÌŒ” ÌŒ•” ÌŽ” ÌŽ” ÌŽ” ÌŽ”  ÌŽ”” Ì” Ì” Ì
+” Ì”” Ì” Ì” Ì” Ì”” Ì‘” Ì‘
+” Ì‘” Ì‘”” Ì’” Ì’” Ì’” Ì’”” Ì“” Ì“
+” Ì“” Ì“”” Ì”” Ì”” Ì”” Ì””” Ì•” Ì•” Ì•”" Ì•“”	 Ì–”
+ Ì–” Ì–•” Ì˜” Ì˜” Ì˜” Ì˜”  Ì˜”” Ì™” Ì™” Ì™
+” Ì™”” Ìš” Ìš” Ìš” Ìš”” Ì›” Ì›
+” Ì›” Ì›”” Ìœ” Ìœ” Ìœ”  Ìœ”” Ì” Ì
+” Ì” Ì”” Ìž” Ìž” Ìž” Ìž”” ÌŸ” ÌŸ” ÌŸ”! ÌŸ“”	 Ì ”
+ Ì ” Ì •” Ì¢” Ì¢” Ì¢” Ì¢”  Ì¢”” Ì£” Ì£” Ì£
+” Ì£”” Ì¤” Ì¤” Ì¤” Ì¤”” Ì¥” Ì¥
+” Ì¥” Ì¥”” Ì¦” Ì¦” Ì¦”! Ì¦”” Ì§” Ì§
+” Ì§” Ì§”” Ì¨” Ì¨” Ì¨” Ì¨”” Ì©” Ì©” Ì©”# Ì©“”	 Ìª”
+ Ìª” Ìª•” Ì¬” Ì¬” Ì¬” Ì¬”  Ì¬”” Ì­” Ì­” Ì­
+” Ì­”” Ì®” Ì®” Ì®” Ì®”” Ì¯” Ì¯
+” Ì¯” Ì¯”” Ì°” Ì°” Ì°”% Ì°”” Ì±” Ì±
+” Ì±” Ì±”” Ì²” Ì²” Ì²” Ì²”” Ì³” Ì³” Ì³” Ì³“”	 Ì´”
+ Ì´” Ì´•” Ì¶” Ì¶” Ì¶” Ì¶”  Ì¶”” Ì·” Ì·” Ì·
+” Ì·”” Ì¸” Ì¸” Ì¸” Ì¸”” Ì¹” Ì¹
+” Ì¹” Ì¹”” Ìº” Ìº” Ìº”% Ìº”” Ì»” Ì»
+” Ì»” Ì»”” Ì¼” Ì¼” Ì¼” Ì¼”” Ì½” Ì½” Ì½” Ì½“”	 Ì¾”
+ Ì¾” Ì¾•” ÌÀ” ÌÀ” ÌÀ” ÌÀ”  ÌÀ”” ÌÁ” ÌÁ” ÌÁ
+” ÌÁ”” ÌÂ” ÌÂ” ÌÂ” ÌÂ”” ÌÃ” ÌÃ
+” ÌÃ” ÌÃ”” ÌÄ” ÌÄ” ÌÄ”# ÌÄ”” ÌÅ” ÌÅ
+” ÌÅ” ÌÅ”” ÌÆ” ÌÆ” ÌÆ” ÌÆ”” ÌÇ” ÌÇ” ÌÇ”$ ÌÇ“”	 ÌÈ”
+ ÌÈ” ÌÈ•” ÌÊ” ÌÊ” ÌÊ” ÌÊ”  ÌÊ”” ÌË” ÌË” ÌË
+” ÌË”” ÌÌ” ÌÌ” ÌÌ” ÌÌ”” ÌÍ” ÌÍ
+” ÌÍ” ÌÍ”” ÌÎ” ÌÎ” ÌÎ”  ÌÎ”” ÌÏ” ÌÏ
+” ÌÏ” ÌÏ”” ÌÐ” ÌÐ” ÌÐ” ÌÐ”” ÌÑ” ÌÑ” ÌÑ”! ÌÑ“”	 ÌÒ”
+ ÌÒ” ÌÒ•” ÌÔ” ÌÔ” ÌÔ” ÌÔ”  ÌÔ”” ÌÕ” ÌÕ” ÌÕ
+” ÌÕ”” ÌÖ” ÌÖ” ÌÖ” ÌÖ”” Ì×” Ì×
+” Ì×” Ì×”” ÌØ” ÌØ” ÌØ”# ÌØ”” ÌÙ” ÌÙ
+” ÌÙ” ÌÙ”” ÌÚ” ÌÚ” ÌÚ” ÌÚ”” ÌÛ” ÌÛ” ÌÛ” ÌÛ“”	 ÌÜ”
+ ÌÜ” ÌÜ•” ÌÞ” ÌÞ” ÌÞ” ÌÞ”  ÌÞ”” Ìß” Ìß” Ìß
+” Ìß”” Ìà” Ìà” Ìà” Ìà”” Ìá” Ìá
+” Ìá” Ìá”” Ìâ” Ìâ” Ìâ”% Ìâ”” Ìã” Ìã
+” Ìã” Ìã”” Ìä” Ìä” Ìä” Ìä”” Ìå” Ìå” Ìå”! Ìå“”	 Ìæ”
+ Ìæ” Ìæ•” Ìè” Ìè” Ìè” Ìè”  Ìè”” Ìé” Ìé” Ìé
+” Ìé”” Ìê” Ìê” Ìê” Ìê”” Ìë” Ìë
+” Ìë” Ìë”” Ìì” Ìì” Ìì”& Ìì ”” Ìí” Ìí
+” Ìí” Ìí”” Ìî” Ìî” Ìî” Ìî”” Ìï” Ìï” Ìï”! Ìï“”	 Ìð”
+ Ìð” Ìð•” Ìò” Ìò” Ìò” Ìò”  Ìò”” Ìó” Ìó” Ìó
+” Ìó”” Ìô” Ìô” Ìô” Ìô”” Ìõ” Ìõ
+” Ìõ” Ìõ”” Ìö” Ìö” Ìö”& Ìö ”” Ì÷” Ì÷
+” Ì÷” Ì÷”” Ìø” Ìø” Ìø” Ìø”” Ìù” Ìù” Ìù”! Ìù“”	 Ìú”
+ Ìú” Ìú•” Ìü” Ìü” Ìü” Ìü”  Ìü”” Ìý” Ìý” Ìý
+” Ìý”” Ìþ” Ìþ” Ìþ” Ìþ”” Ìÿ” Ìÿ
+” Ìÿ” Ìÿ”” Í ” Í ” Í ”& Í  ”” Í” Í
+” Í” Í”” Í” Í” Í” Í”” Í” Í” Í”$ Í“”	 Í”
+ Í” Í’” Í”ÌH ÍÌD•” Í” Í” Í” Í”  Í”” Í” Í” Í
+” Í”” Í	” Í	” Í	” Í	”” Í
+” Í
+
+” Í
+” Í
+”” Í” Í” Í” Í”” Í” Í
+” Í” Í”” Í” Í” Í”! Í”” Í” Í” Í”! Í“”	 Í”
+ Í” Í•” Í” Í” Í” Í”  Í”” Í” Í” Í
+” Í”” Í” Í” Í” Í”” Í” Í
+” Í” Í”” Í” Í” Í” Í”” Í” Í
+” Í” Í”” Í” Í” Í”! Í”” Í” Í” Í”" Í“”	 Í”
+ Í” Í•” Í” Í” Í” Í”  Í”” Í” Í” Í
+” Í”” Í” Í” Í” Í”” Í” Í
+” Í” Í”” Í” Í” Í” Í”” Í ” Í 
+” Í ” Í ”” Í!” Í!” Í!”! Í!”” Í"” Í"” Í"”" Í"“”	 Í#”
+ Í#” Í#•” Í%” Í%” Í%” Í%”  Í%”” Í&” Í&” Í&
+” Í&”” Í'” Í'” Í'” Í'”” Í(” Í(
+” Í(” Í(”” Í)” Í)” Í)” Í)”” Í*” Í*
+” Í*” Í*”” Í+” Í+” Í+”! Í+”” Í,” Í,” Í,”! Í,“”	 Í-”
+ Í-” Í-•” Í/” Í/” Í/” Í/”  Í/”” Í0” Í0” Í0
+” Í0”” Í1” Í1” Í1” Í1”” Í2” Í2
+” Í2” Í2”” Í3” Í3” Í3”  Í3”” Í4” Í4
+” Í4” Í4”” Í5” Í5” Í5”! Í5”” Í6” Í6” Í6”& Í6 “”	 Í7”
+ Í7” Í7•” Í9” Í9” Í9” Í9”  Í9”” Í:” Í:” Í:
+” Í:”” Í;” Í;” Í;” Í;”” Í<” Í<
+” Í<” Í<”” Í=” Í=” Í=”! Í=”” Í>” Í>
+” Í>” Í>”” Í?” Í?” Í?”! Í?”” Í@” Í@” Í@”! Í@“”	 ÍA”
+ ÍA” ÍA—” ÍC” ÍC” ÍC” ÍC”" ÍC”& ÍC"”' ÍC#Ü ” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD”: ÍD6”= ÍD9”ÌH ÍDÌD”ÌI ÍDÌE”ÌR ÍDÌN”ÌS ÍDÌO”ÌW ÍDÌS”ÌZ ÍDÌV”Ì` ÍDÌ\”Ìa ÍDÌ]”Ìb ÍDÌ^’” ÍE” ÍE‘” ÍG‘” ÍI–” ÍJ	”
+ ÍJ” ÍJ” ÍJ” ÍJ” ÍJ0’” ÍK” ÍK” ÍL” ÍL” ÍL” ÍL”! ÍL”" ÍL”% ÍL!”& ÍL"”+ ÍL'”, ÍL(”2 ÍL.”3 ÍL/”5 ÍL1” ÍM” ÍM” ÍM” ÍM”  ÍM”! ÍM”6 ÍM0”; ÍM5”< ÍM6”ÌB ÍM<”ÌN ÍMÌH”ÌO ÍMÌI”ÌP ÍMÌJ‘”	 ÍN’” ÍP” ÍP” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ”! ÍQ”" ÍQ”' ÍQ#”( ÍQ$”* ÍQ&”+ ÍQ'”- ÍQ)” ÍR” ÍR” ÍR” ÍR”  ÍR”! ÍR”6 ÍR0”; ÍR5”< ÍR6”> ÍR8”ÌJ ÍRÌD”ÌK ÍRÌE”ÌL ÍRÌF‘”	 ÍSž” ÍU” ÍU” ÍU” ÍU” ÍU”! ÍU”" ÍU”' ÍU#”( ÍU$”. ÍU*”0 ÍU,”5 ÍU1”6 ÍU2”7 ÍU3ž” ÍV” ÍV” ÍV” ÍV” ÍV” ÍV” ÍV”# ÍV”$ ÍV ”& ÍV"”( ÍV$”- ÍV)”. ÍV*”/ ÍV+’” ÍW” ÍW‘” ÍY‘” Í[–” Í\	”
+ Í\” Í\” Í\” Í\”  Í\-” Í]” Í]
+” Í]” Í]”! Í]”" Í]”+ Í]'”, Í](”/ Í]+”0 Í],”6 Í]2”7 Í]3”8 Í]4”” Í^” Í^” Í^” Í^š” Í_” Í_” Í_”! Í_”" Í_”( Í_"”) Í_#”/ Í_)”0 Í_*”1 Í_+œ” Í`” Í`” Í`” Í`” Í`”$ Í`”% Í`”* Í`$”+ Í`%”- Í`'”. Í`(”/ Í`)”” Ía” Ía” Ía” Ía‘”	 Íb”” Íc” Íc” Íc” Íc’” Íd” Íd‘” Íf‘” Íh–” Íi	”
+ Íi” Íi” Íi” Íi” Íi*›” Íj” Íj” Íj” Íj”$ Íj ”% Íj!”( Íj$”) Íj%”/ Íj+”0 Íj,”1 Íj-’” Ík” Ík‘” Ím‘” Ío–” Íp	”
+ Íp” Íp” Íp” Íp ” Íp*›” Íq” Íq” Íq” Íq”  Íq”! Íq”$ Íq ”% Íq!”' Íq#”( Íq$”) Íq%’” Ír” Ír‘” Ít‘” Ív”” Íw	”
+ Íw” Íw” Íwž” Íx” Íx” Íx” Íx” Íx” Íx”% Íx!”& Íx"”/ Íx+”0 Íx,”4 Íx0”6 Íx2”7 Íx3”8 Íx4’” Íy” Íy‘” Í{‘” Í}”” Í~	”
+ Í~” Í~” Í~ž” Í” Í” Í” Í” Í” Í”% Í!”& Í"”/ Í+”0 Í,”6 Í2”8 Í4”9 Í5”: Í6’” Í€” Í€‘” Í‚‘” Í„–” Í…	”
+ Í…” Í…”! Í…&”" Í…'”* Í…7Ü ” Í†” Í†” Í†” Í†”* Í†&”, Í†(”- Í†)”3 Í†/”4 Í†0”9 Í†5”: Í†6”< Í†8”= Í†9”ÌB Í†>”ÌC Í†?”ÌK Í†ÌG”ÌP Í†ÌL”ÌX Í†ÌT”ÌY Í†ÌU”ÌZ Í†ÌV’” Í‡” Í‡‘” Í‰‘” Í‹–” ÍŒ	”
+ ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ)›” Í” Í” Í” Í”$ Í ”% Í!”( Í$”) Í%”/ Í+”0 Í,”1 Í-’” ÍŽ” ÍŽ‘” Í‘” Í’–” Í“	”
+ Í“” Í“” Í“ ” Í“!”" Í“/›” Í”” Í”
+” Í”” Í””! Í””" Í””- Í”)”. Í”*”4 Í”0”5 Í”1”6 Í”2–” Í•” Í•” Í•” Í•” Í•” Í•’” Í–” Í–‘” Í˜‘” Íš–” Í›	”
+ Í›” Í›”' Í›,”( Í›-”, Í›9–” Íœ” Íœ” Íœ” Íœ” Íœ” Íœ’” Íž” ÍžÜ ” ÍŸ” ÍŸ
+” ÍŸ” ÍŸ”# ÍŸ”$ ÍŸ ”1 ÍŸ-”3 ÍŸ/”4 ÍŸ0”8 ÍŸ4”9 ÍŸ5”: ÍŸ6”; ÍŸ7”= ÍŸ9”> ÍŸ:”Ì@ ÍŸ<”ÌB ÍŸ>”ÌC ÍŸ?”ÌD ÍŸÌ@”ÌE ÍŸÌA”ÌK ÍŸÌG”ÌN ÍŸÌJ”ÌO ÍŸÌK”ÌP ÍŸÌL”ÌV ÍŸÌR”ÌW ÍŸÌS”ÌX ÍŸÌT’” Í¡” Í¡—” Í¢” Í¢	” Í¢” Í¢” Í¢”$ Í¢ ”& Í¢"›” Í£” Í£” Í£” Í£”% Í£”& Í£ ”6 Í£0”7 Í£1”= Í£7”> Í£8”? Í£9”” Í¤” Í¤
+” Í¤” Í¤” Í¥” Í¥” Í¥”  Í¥”& Í¥”' Í¥”. Í¥&”/ Í¥'”ÌD Í¥<”ÌF Í¥>”ÌL Í¥ÌD”ÌM Í¥ÌE”ÌN Í¥ÌF’” Í§”- Í§%’” Í¨”( Í¨ ’” Í©” Í©˜” Íª” Íª”# Íª”& Íª”: Íª2”ÌA Íª9”ÌR ÍªÌJ”ÌS ÍªÌK’” Í¬” Í¬œ” Í­
+” Í­” Í­”" Í­”& Í­”, Í­"”- Í­#”< Í­2”> Í­4”ÌA Í­7”ÌB Í­8”ÌC Í­9œ” Í®
+” Í®” Í®”# Í®”$ Í®”+ Í®!”, Í®"”1 Í®'”3 Í®)”8 Í®.”9 Í®/”: Í®0‘” Í¯	”” Í¯
+” Í¯” Í¯” Í¯” Í°
+”! Í°”# Í°”$ Í°”( Í°”) Í°”ÌF Í°<”ÌL Í°ÌB”ÌQ Í°ÌG”ÌR Í°ÌH”ÌT Í°ÌJ”ÌU Í°ÌK”ÌV Í°ÌL‘” Í±	‘” Í²‘”	 Í³”” Íµ” Íµ” Íµ” Íµ’” Í¶” Í¶‘” Í¸‘” Íº”” Í»	”
+ Í»” Í»” Í» ˜” Í¼” Í¼
+” Í¼” Í¼” Í¼”" Í¼”$ Í¼(”% Í¼)š” Í½” Í½	” Í½” Í½” Í½”' Í½#”( Í½$”7 Í½3”9 Í½5”; Í½7š” Í¾” Í¾” Í¾” Í¾” Í¾”  Í¾”! Í¾”) Í¾#”* Í¾$”+ Í¾%‘”	 Í¿™” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ”$ ÍÀ ”% ÍÀ!”& ÍÀ"’” ÍÁ” ÍÁ‘” ÍÃ‘” ÍÅ”” ÍÆ	”
+ ÍÆ” ÍÆ” ÍÆ˜” ÍÇ” ÍÇ” ÍÇ” ÍÇ” ÍÇ”# ÍÇ”% ÍÇ!”& ÍÇ"˜” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ”! ÍÈ”" ÍÈ—” ÍÉ” ÍÉ” ÍÉ” ÍÉ”" ÍÉ”' ÍÉ#”( ÍÉ$’” ÍÊ” ÍÊ’”  2” 2—”  3” 3” 39” 3=” 3Ì@”! 3ÌB”" 3ÌC’”  4” 4—”  5” 5” 55” 59” 5<” 5>” 5?’”  6”	 6•”  7” 7” 7(” 7-”  7.ÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ‹””    ”  ”  ”  Ü 2”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1””   ” ” ” Ü D”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1”2 2”3 3”4 4”5 5”6 6”7 7”8 8”9 9”: :”; ;”< <”= =”> >”? ?”Ì@ Ì@”ÌA ÌA”ÌB ÌB”ÌC ÌCÜ E”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1”2 2”3 3”4 4”5 5”6 6”7 7”8 8”9 9”: :”; ;”< <”= =”> >”? ?”Ì@ Ì@”ÌA ÌA”ÌB ÌB”ÌC ÌC”ÌD ÌDÜ ,”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +””   ” ” ” Ü 3”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1”2 2””   ” ” ” Ü H”  	 ” 	” 	” 	” 	” 	” 	” 	” 	”	 		”
+ 	
+” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	” 	”  	 ”! 	!”" 	"”# 	#”$ 	$”% 	%”& 	&”' 	'”( 	(”) 	)”* 	*”+ 	+”, 	,”- 	-”. 	.”/ 	/”0 	0”1 	1”2 	2”3 	3”4 	4”5 	5”6 	6”7 	7”8 	8”9 	9”: 	:”; 	;”< 	<”= 	=”> 	>”? 	?”Ì@ 	Ì@”ÌA 	ÌA”ÌB 	ÌB”ÌC 	ÌC”ÌD 	ÌD”ÌE 	ÌE”ÌF 	ÌF”ÌG 	ÌGÜ F”  
+ ” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+”	 
+	”
+ 
+
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+” 
+”  
+ ”! 
+!”" 
+"”# 
+#”$ 
+$”% 
+%”& 
+&”' 
+'”( 
+(”) 
+)”* 
+*”+ 
++”, 
+,”- 
+-”. 
+.”/ 
+/”0 
+0”1 
+1”2 
+2”3 
+3”4 
+4”5 
+5”6 
+6”7 
+7”8 
+8”9 
+9”: 
+:”; 
+;”< 
+<”= 
+=”> 
+>”? 
+?”Ì@ 
+Ì@”ÌA 
+ÌA”ÌB 
+ÌB”ÌC 
+ÌC”ÌD 
+ÌD”ÌE 
+ÌEÜ M”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1”2 2”3 3”4 4”5 5”6 6”7 7”8 8”9 9”: :”; ;”< <”= =”> >”? ?”Ì@ Ì@”ÌA ÌA”ÌB ÌB”ÌC ÌC”ÌD ÌD”ÌE ÌE”ÌF ÌF”ÌG ÌG”ÌH ÌH”ÌI ÌI”ÌJ ÌJ”ÌK ÌK”ÌL ÌLÜ H”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .”/ /”0 0”1 1”2 2”3 3”4 4”5 5”6 6”7 7”8 8”9 9”: :”; ;”< <”= =”> >”? ?”Ì@ Ì@”ÌA ÌA”ÌB ÌB”ÌC ÌC”ÌD ÌD”ÌE ÌE”ÌF ÌF”ÌG ÌGÜ #”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "•”   ” ” ” ” •”   ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ””   ” ” ” š”   ” ” ” ” ” ” ” ” ”	 	Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” •”   ” ” ” ” Ü /”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”   ”! !”" "”# #”$ $”% %”& &”' '”( (”) )”* *”+ +”, ,”- -”. .•”   ” ” ” ” ™”   ” ” ” ” ” ” ” ” •”   ” ” ” ” Ü ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ™”   ” ” ” ” ” ” ” ” Ÿ”   ” ” ” ” ” ” ” ” ”	 	”
+ 
+” ” ” ” ™”    ”  ”  ”  ”  ”  ”  ”  ”  Ü ”  ! ” !” !” !” !” !” !” !” !”	 !	”
+ !
+” !” !” !” !” !” !” !” !” !” !” !” !” !” !” !” !Ü (”  " ” "” "” "” "” "” "” "” "”	 "	”
+ "
+” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "” "”  " ”! "!”" ""”# "#”$ "$”% "%”& "&”' "'Ü ”  # ” #” #” #” #” #” #” #” #”	 #	”
+ #
+” #” #” #” #” #” #” #” #” #” #›”  $ ” $” $” $” $” $” $” $” $”	 $	”
+ $
+Ü J”  % ” %” %” %” %” %” %” %” %”	 %	”
+ %
+” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %” %”  % ”! %!”" %"”# %#”$ %$”% %%”& %&”' %'”( %(”) %)”* %*”+ %+”, %,”- %-”. %.”/ %/”0 %0”1 %1”2 %2”3 %3”4 %4”5 %5”6 %6”7 %7”8 %8”9 %9”: %:”; %;”< %<”= %=”> %>”? %?”Ì@ %Ì@”ÌA %ÌA”ÌB %ÌB”ÌC %ÌC”ÌD %ÌD”ÌE %ÌE”ÌF %ÌF”ÌG %ÌG”ÌH %ÌH”ÌI %ÌIÜ #”  & ” &” &” &” &” &” &” &” &”	 &	”
+ &
+” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &” &”  & ”! &!”" &"Ü ”  ' ” '” '” '” '” '” '” '” '”	 '	”
+ '
+” '” '” '” '” '” '” '” '” '” '” '” 'Ü ”  ( ” (” (” (” (” (” (” (” (”	 (	”
+ (
+” (” (” (” (” (” (” (” (” (” (” (” (” (” (” (Ü ”  ) ” )” )” )” )” )” )” )” )”	 )	”
+ )
+” )” )” )” )” )” )” )” )” )” )” )” )” )” )” )Ü .”  * ” *” *” *” *” *” *” *” *”	 *	”
+ *
+” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *” *”  * ”! *!”" *"”# *#”$ *$”% *%”& *&”' *'”( *(”) *)”* **”+ *+”, *,”- *-Ü ”  + ” +” +” +” +” +” +” +” +”	 +	”
+ +
+” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +” +Ü +”  , ” ,” ,” ,” ,” ,” ,” ,” ,”	 ,	”
+ ,
+” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,” ,”  , ”! ,!”" ,"”# ,#”$ ,$”% ,%”& ,&”' ,'”( ,(”) ,)”* ,*”  - ” -” -” -” -” -” -” -” -”	 -	”
+ -
+” -” -Ü #”  . ” .” .” .” .” .” .” .” .”	 .	”
+ .
+” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .” .”  . ”! .!”" ."Ü ”  / ” /” /” /” /” /” /” /” /”	 /	”
+ /
+” /” /” /” /” /” /” /” /” /” /” /Ü ”  0 ” 0” 0” 0” 0” 0” 0” 0” 0”	 0	”
+ 0
+” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0” 0Ü ”  1 ” 1” 1” 1” 1” 1” 1” 1” 1”	 1	”
+ 1
+” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1” 1Ü .”  2 ” 2” 2” 2” 2” 2” 2” 2” 2”	 2	”
+ 2
+” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2” 2”  2 ”! 2!”" 2"”# 2#”$ 2$”% 2%”& 2&”' 2'”( 2(”) 2)”* 2*”+ 2+”, 2,”- 2-Ü ”  3 ” 3” 3” 3” 3” 3” 3” 3” 3”	 3	”
+ 3
+” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3” 3Ü $”  4 ” 4” 4” 4” 4” 4” 4” 4” 4”	 4	”
+ 4
+” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4” 4”  4 ”! 4!”" 4"”# 4#”  5 ” 5” 5” 5” 5” 5” 5” 5” 5”	 5	”
+ 5
+” 5” 5Ü #”  6 ” 6” 6” 6” 6” 6” 6” 6” 6”	 6	”
+ 6
+” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6” 6”  6 ”! 6!”" 6"Ü ”  7 ” 7” 7” 7” 7” 7” 7” 7” 7”	 7	”
+ 7
+” 7” 7” 7” 7” 7” 7” 7” 7” 7” 7” 7” 7” 7Ü ”  8 ” 8” 8” 8” 8” 8” 8” 8” 8”	 8	”
+ 8
+” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8” 8Ü ”  9 ” 9” 9” 9” 9” 9” 9” 9” 9”	 9	”
+ 9
+” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9” 9Ü .”  : ” :” :” :” :” :” :” :” :”	 :	”
+ :
+” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :” :”  : ”! :!”" :"”# :#”$ :$”% :%”& :&”' :'”( :(”) :)”* :*”+ :+”, :,”- :-Ü ”  ; ” ;” ;” ;” ;” ;” ;” ;” ;”	 ;	”
+ ;
+” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;” ;Ü %”  < ” <” <” <” <” <” <” <” <”	 <	”
+ <
+” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <” <”  < ”! <!”" <"”# <#”$ <$”  = ” =” =” =” =” =” =” =” =”	 =	”
+ =
+” =” =Ü #”  > ” >” >” >” >” >” >” >” >”	 >	”
+ >
+” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >” >”  > ”! >!”" >"Ü ”  ? ” ?” ?” ?” ?” ?” ?” ?” ?”	 ?	”
+ ?
+” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?” ?Ü ”  Ì@ ” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@”	 Ì@	”
+ Ì@
+” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@” Ì@Ü  ”  ÌA ” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA”	 ÌA	”
+ ÌA
+” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA” ÌAÜ .”  ÌB ” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB”	 ÌB	”
+ ÌB
+” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB” ÌB”  ÌB ”! ÌB!”" ÌB"”# ÌB#”$ ÌB$”% ÌB%”& ÌB&”' ÌB'”( ÌB(”) ÌB)”* ÌB*”+ ÌB+”, ÌB,”- ÌB-Ü ”  ÌC ” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC”	 ÌC	”
+ ÌC
+” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌC” ÌCÜ 6”  ÌD ” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD”	 ÌD	”
+ ÌD
+” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD” ÌD”  ÌD ”! ÌD!”" ÌD"”# ÌD#”$ ÌD$”% ÌD%”& ÌD&”' ÌD'”( ÌD(”) ÌD)”* ÌD*”+ ÌD+”, ÌD,”- ÌD-”. ÌD.”/ ÌD/”0 ÌD0”1 ÌD1”2 ÌD2”3 ÌD3”4 ÌD4”5 ÌD5”  ÌE ” ÌE” ÌE” ÌE” ÌE” ÌE” ÌE” ÌE” ÌE”	 ÌE	”
+ ÌE
+” ÌE” ÌEÜ &”  ÌF ” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF”	 ÌF	”
+ ÌF
+” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF” ÌF”  ÌF ”! ÌF!”" ÌF"”# ÌF#”$ ÌF$”% ÌF%Ü ”  ÌG ” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG”	 ÌG	”
+ ÌG
+” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌG” ÌGÜ ”  ÌH ” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH”	 ÌH	”
+ ÌH
+” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌH” ÌHÜ ”  ÌI ” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI”	 ÌI	”
+ ÌI
+” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌI” ÌIÜ /”  ÌJ ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”	 ÌJ	”
+ ÌJ
+” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”  ÌJ ”! ÌJ!”" ÌJ"”# ÌJ#”$ ÌJ$”% ÌJ%”& ÌJ&”' ÌJ'”( ÌJ(”) ÌJ)”* ÌJ*”+ ÌJ+”, ÌJ,”- ÌJ-”. ÌJ.Ü  ”  ÌK ” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK”	 ÌK	”
+ ÌK
+” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK” ÌKÜ 1”  ÌL ” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL”	 ÌL	”
+ ÌL
+” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL” ÌL”  ÌL ”! ÌL!”" ÌL"”# ÌL#”$ ÌL$”% ÌL%”& ÌL&”' ÌL'”( ÌL(”) ÌL)”* ÌL*”+ ÌL+”, ÌL,”- ÌL-”. ÌL.”/ ÌL/”0 ÌL0Ü ”  ÌM ” ÌM” ÌM” ÌM” ÌM” ÌM” ÌM” ÌM” ÌM”	 ÌM	”
+ ÌM
+” ÌM” ÌM” ÌM” ÌM” ÌMÜ J”  ÌN ” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN”	 ÌN	”
+ ÌN
+” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN” ÌN”  ÌN ”! ÌN!”" ÌN"”# ÌN#”$ ÌN$”% ÌN%”& ÌN&”' ÌN'”( ÌN(”) ÌN)”* ÌN*”+ ÌN+”, ÌN,”- ÌN-”. ÌN.”/ ÌN/”0 ÌN0”1 ÌN1”2 ÌN2”3 ÌN3”4 ÌN4”5 ÌN5”6 ÌN6”7 ÌN7”8 ÌN8”9 ÌN9”: ÌN:”; ÌN;”< ÌN<”= ÌN=”> ÌN>”? ÌN?”Ì@ ÌNÌ@”ÌA ÌNÌA”ÌB ÌNÌB”ÌC ÌNÌC”ÌD ÌNÌD”ÌE ÌNÌE”ÌF ÌNÌF”ÌG ÌNÌG”ÌH ÌNÌH”ÌI ÌNÌIÜ #”  ÌO ” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO”	 ÌO	”
+ ÌO
+” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO” ÌO”  ÌO ”! ÌO!”" ÌO"Ü ”  ÌP ” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP”	 ÌP	”
+ ÌP
+” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌP” ÌPÜ ”  ÌQ ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ”	 ÌQ	”
+ ÌQ
+” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ” ÌQÜ ”  ÌR ” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR”	 ÌR	”
+ ÌR
+” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌR” ÌRÜ !”  ÌS ” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS”	 ÌS	”
+ ÌS
+” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS” ÌS”  ÌS Ü ”  ÌT ” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT”	 ÌT	”
+ ÌT
+” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT” ÌTÜ "”  ÌU ” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU”	 ÌU	”
+ ÌU
+” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU” ÌU”  ÌU ”! ÌU!Ü #”  ÌV ” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV”	 ÌV	”
+ ÌV
+” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV” ÌV”  ÌV ”! ÌV!”" ÌV"”  ÌW ” ÌW” ÌW” ÌW” ÌW” ÌW” ÌW” ÌW” ÌW”	 ÌW	”
+ ÌW
+” ÌW” ÌWÜ #”  ÌX ” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX”	 ÌX	”
+ ÌX
+” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX” ÌX”  ÌX ”! ÌX!”" ÌX"Ü ”  ÌY ” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY”	 ÌY	”
+ ÌY
+” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌY” ÌYÜ ”  ÌZ ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ”	 ÌZ	”
+ ÌZ
+” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ” ÌZÜ ”  Ì[ ” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[”	 Ì[	”
+ Ì[
+” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[” Ì[Ü &”  Ì\ ” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\”	 Ì\	”
+ Ì\
+” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\”  Ì\ ”! Ì\!”" Ì\"”# Ì\#”$ Ì\$”% Ì\%Ü ”  Ì] ” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]”	 Ì]	”
+ Ì]
+” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]” Ì]Ü "”  Ì^ ” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^”	 Ì^	”
+ Ì^
+” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^”  Ì^ ”! Ì^!Ü %”  Ì_ ” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_”	 Ì_	”
+ Ì_
+” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_” Ì_”  Ì_ ”! Ì_!”" Ì_"”# Ì_#”$ Ì_$”  Ì` ” Ì`” Ì`” Ì`” Ì`” Ì`” Ì`” Ì`” Ì`”	 Ì`	”
+ Ì`
+” Ì`” Ì`Ü #”  Ìa ” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa”	 Ìa	”
+ Ìa
+” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa” Ìa”  Ìa ”! Ìa!”" Ìa"Ü ”  Ìb ” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb”	 Ìb	”
+ Ìb
+” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” Ìb” ÌbÜ ”  Ìc ” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc”	 Ìc	”
+ Ìc
+” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” Ìc” ÌcÜ ”  Ìd ” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd”	 Ìd	”
+ Ìd
+” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” Ìd” ÌdÜ '”  Ìe ” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe”	 Ìe	”
+ Ìe
+” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe” Ìe”  Ìe ”! Ìe!”" Ìe"”# Ìe#”$ Ìe$”% Ìe%”& Ìe&Ü ”  Ìf ” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf”	 Ìf	”
+ Ìf
+” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” Ìf” ÌfÜ "”  Ìg ” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg”	 Ìg	”
+ Ìg
+” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg”  Ìg ”! Ìg!Ü !”  Ìh ” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh”	 Ìh	”
+ Ìh
+” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh” Ìh”  Ìh ”  Ìi ” Ìi” Ìi” Ìi” Ìi” Ìi” Ìi” Ìi” Ìi”	 Ìi	”
+ Ìi
+” Ìi” ÌiÜ #”  Ìj ” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj”	 Ìj	”
+ Ìj
+” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj” Ìj”  Ìj ”! Ìj!”" Ìj"Ü ”  Ìk ” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk”	 Ìk	”
+ Ìk
+” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” Ìk” ÌkÜ ”  Ìl ” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl”	 Ìl	”
+ Ìl
+” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” Ìl” ÌlÜ ”  Ìm ” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm”	 Ìm	”
+ Ìm
+” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” Ìm” ÌmÜ ”  Ìn ” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn”	 Ìn	”
+ Ìn
+” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” Ìn” ÌnÜ ”  Ìo ” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo”	 Ìo	”
+ Ìo
+” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” Ìo” ÌoÜ "”  Ìp ” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp”	 Ìp	”
+ Ìp
+” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp”  Ìp ”! Ìp!Ü $”  Ìq ” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq”	 Ìq	”
+ Ìq
+” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq” Ìq”  Ìq ”! Ìq!”" Ìq"”# Ìq#”  Ìr ” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr” Ìr”	 Ìr	”
+ Ìr
+” Ìr” ÌrÜ #”  Ìs ” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs”	 Ìs	”
+ Ìs
+” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs”  Ìs ”! Ìs!”" Ìs"Ü ”  Ìt ” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt”	 Ìt	”
+ Ìt
+” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” Ìt” ÌtÜ ”  Ìu ” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu”	 Ìu	”
+ Ìu
+” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” Ìu” ÌuÜ ”  Ìv ” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv”	 Ìv	”
+ Ìv
+” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” Ìv” ÌvÜ #”  Ìw ” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw”	 Ìw	”
+ Ìw
+” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw” Ìw”  Ìw ”! Ìw!”" Ìw"Ü ”  Ìx ” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx”	 Ìx	”
+ Ìx
+” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx” ÌxÜ "”  Ìy ” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy”	 Ìy	”
+ Ìy
+” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy” Ìy”  Ìy ”! Ìy!Ü #”  Ìz ” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz”	 Ìz	”
+ Ìz
+” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz” Ìz”  Ìz ”! Ìz!”" Ìz"”  Ì{ ” Ì{” Ì{” Ì{” Ì{” Ì{” Ì{” Ì{” Ì{”	 Ì{	”
+ Ì{
+” Ì{” Ì{Ü #”  Ì| ” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|”	 Ì|	”
+ Ì|
+” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|” Ì|”  Ì| ”! Ì|!”" Ì|"Ü ”  Ì} ” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}”	 Ì}	”
+ Ì}
+” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}” Ì}Ü ”  Ì~ ” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~”	 Ì~	”
+ Ì~
+” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~” Ì~Ü ”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” ÌÜ $”  Ì€ ” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€”	 Ì€	”
+ Ì€
+” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€”  Ì€ ”! Ì€!”" Ì€"”# Ì€#Ü ”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” ÌÜ "”  Ì‚ ” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”	 Ì‚	”
+ Ì‚
+” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”  Ì‚ ”! Ì‚!Ü %”  Ìƒ ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ”	 Ìƒ	”
+ Ìƒ
+” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ”  Ìƒ ”! Ìƒ!”" Ìƒ"”# Ìƒ#”$ Ìƒ$”  Ì„ ” Ì„” Ì„” Ì„” Ì„” Ì„” Ì„” Ì„” Ì„”	 Ì„	”
+ Ì„
+” Ì„” Ì„Ü #”  Ì… ” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…”	 Ì…	”
+ Ì…
+” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…” Ì…”  Ì… ”! Ì…!”" Ì…"Ü ”  Ì† ” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†”	 Ì†	”
+ Ì†
+” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†” Ì†Ü ”  Ì‡ ” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡”	 Ì‡	”
+ Ì‡
+” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡Ü ”  Ìˆ ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ”	 Ìˆ	”
+ Ìˆ
+” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ” ÌˆÜ (”  Ì‰ ” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰”	 Ì‰	”
+ Ì‰
+” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰”  Ì‰ ”! Ì‰!”" Ì‰"”# Ì‰#”$ Ì‰$”% Ì‰%”& Ì‰&”' Ì‰'Ü ”  ÌŠ ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ”	 ÌŠ	”
+ ÌŠ
+” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠÜ "”  Ì‹ ” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹”	 Ì‹	”
+ Ì‹
+” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹”  Ì‹ ”! Ì‹!Ü  ”  ÌŒ ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ”	 ÌŒ	”
+ ÌŒ
+” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” ÌÜ #”  ÌŽ ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ”	 ÌŽ	”
+ ÌŽ
+” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ” ÌŽ”  ÌŽ ”! ÌŽ!”" ÌŽ"Ü ”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” ÌÜ ”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” ÌÜ ”  Ì‘ ” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘”	 Ì‘	”
+ Ì‘
+” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘Ü (”  Ì’ ” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’”	 Ì’	”
+ Ì’
+” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’”  Ì’ ”! Ì’!”" Ì’"”# Ì’#”$ Ì’$”% Ì’%”& Ì’&”' Ì’'Ü ”  Ì“ ” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“”	 Ì“	”
+ Ì“
+” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“” Ì“Ü "”  Ì” ” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì””	 Ì”	”
+ Ì”
+” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì”” Ì””  Ì” ”! Ì”!Ü  ”  Ì• ” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•”	 Ì•	”
+ Ì•
+” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•” Ì•”  Ì– ” Ì–” Ì–” Ì–” Ì–” Ì–” Ì–” Ì–” Ì–”	 Ì–	”
+ Ì–
+” Ì–” Ì–Ü #”  Ì— ” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—”	 Ì—	”
+ Ì—
+” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—” Ì—”  Ì— ”! Ì—!”" Ì—"Ü ”  Ì˜ ” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜”	 Ì˜	”
+ Ì˜
+” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜” Ì˜Ü ”  Ì™ ” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™”	 Ì™	”
+ Ì™
+” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™” Ì™Ü ”  Ìš ” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš”	 Ìš	”
+ Ìš
+” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš” ÌšÜ &”  Ì› ” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›”	 Ì›	”
+ Ì›
+” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›” Ì›”  Ì› ”! Ì›!”" Ì›"”# Ì›#”$ Ì›$”% Ì›%Ü ”  Ìœ ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ”	 Ìœ	”
+ Ìœ
+” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ” ÌœÜ "”  Ì ” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”	 Ì	”
+ Ì
+” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì” Ì”  Ì ”! Ì!Ü &”  Ìž ” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž”	 Ìž	”
+ Ìž
+” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž” Ìž”  Ìž ”! Ìž!”" Ìž"”# Ìž#”$ Ìž$”% Ìž%”  ÌŸ ” ÌŸ” ÌŸ” ÌŸ” ÌŸ” ÌŸ” ÌŸ” ÌŸ” ÌŸ”	 ÌŸ	”
+ ÌŸ
+” ÌŸ” ÌŸÜ #”  Ì  ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ”	 Ì 	”
+ Ì 
+” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ” Ì ”  Ì  ”! Ì !”" Ì "Ü ”  Ì¡ ” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡”	 Ì¡	”
+ Ì¡
+” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡Ü ”  Ì¢ ” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢”	 Ì¢	”
+ Ì¢
+” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢Ü ”  Ì£ ” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£”	 Ì£	”
+ Ì£
+” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£” Ì£Ü #”  Ì¤ ” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤”	 Ì¤	”
+ Ì¤
+” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤”  Ì¤ ”! Ì¤!”" Ì¤"Ü  ”  Ì¥ ” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥”	 Ì¥	”
+ Ì¥
+” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥” Ì¥Ü "”  Ì¦ ” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦”	 Ì¦	”
+ Ì¦
+” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦” Ì¦”  Ì¦ ”! Ì¦!Ü #”  Ì§ ” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§”	 Ì§	”
+ Ì§
+” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§” Ì§”  Ì§ ”! Ì§!”" Ì§"”  Ì¨ ” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨” Ì¨”	 Ì¨	”
+ Ì¨
+” Ì¨” Ì¨Ü #”  Ì© ” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©”	 Ì©	”
+ Ì©
+” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©” Ì©”  Ì© ”! Ì©!”" Ì©"Ü ”  Ìª ” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª”	 Ìª	”
+ Ìª
+” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª” ÌªÜ ”  Ì« ” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«”	 Ì«	”
+ Ì«
+” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«” Ì«Ü ”  Ì¬ ” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬”	 Ì¬	”
+ Ì¬
+” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬Ü &”  Ì­ ” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­”	 Ì­	”
+ Ì­
+” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­” Ì­”  Ì­ ”! Ì­!”" Ì­"”# Ì­#”$ Ì­$”% Ì­%Ü  ”  Ì® ” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®”	 Ì®	”
+ Ì®
+” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®” Ì®Ü "”  Ì¯ ” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯”	 Ì¯	”
+ Ì¯
+” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯” Ì¯”  Ì¯ ”! Ì¯!Ü !”  Ì° ” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°”	 Ì°	”
+ Ì°
+” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°” Ì°”  Ì° ”  Ì± ” Ì±” Ì±” Ì±” Ì±” Ì±” Ì±” Ì±” Ì±”	 Ì±	”
+ Ì±
+” Ì±” Ì±Ü #”  Ì² ” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²”	 Ì²	”
+ Ì²
+” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²” Ì²”  Ì² ”! Ì²!”" Ì²"Ü ”  Ì³ ” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³”	 Ì³	”
+ Ì³
+” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³Ü ”  Ì´ ” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´”	 Ì´	”
+ Ì´
+” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´” Ì´Ü ”  Ìµ ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ”	 Ìµ	”
+ Ìµ
+” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ” ÌµÜ (”  Ì¶ ” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶”	 Ì¶	”
+ Ì¶
+” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶” Ì¶”  Ì¶ ”! Ì¶!”" Ì¶"”# Ì¶#”$ Ì¶$”% Ì¶%”& Ì¶&”' Ì¶'Ü ”  Ì· ” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·”	 Ì·	”
+ Ì·
+” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·” Ì·Ü "”  Ì¸ ” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸”	 Ì¸	”
+ Ì¸
+” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸”  Ì¸ ”! Ì¸!Ü #”  Ì¹ ” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹”	 Ì¹	”
+ Ì¹
+” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹”  Ì¹ ”! Ì¹!”" Ì¹"”  Ìº ” Ìº” Ìº” Ìº” Ìº” Ìº” Ìº” Ìº” Ìº”	 Ìº	”
+ Ìº
+” Ìº” ÌºÜ #”  Ì» ” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»”	 Ì»	”
+ Ì»
+” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»”  Ì» ”! Ì»!”" Ì»"Ü ”  Ì¼ ” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼”	 Ì¼	”
+ Ì¼
+” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼Ü ”  Ì½ ” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½”	 Ì½	”
+ Ì½
+” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½” Ì½Ü ”  Ì¾ ” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾”	 Ì¾	”
+ Ì¾
+” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾” Ì¾Ü )”  Ì¿ ” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿”	 Ì¿	”
+ Ì¿
+” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿” Ì¿”  Ì¿ ”! Ì¿!”" Ì¿"”# Ì¿#”$ Ì¿$”% Ì¿%”& Ì¿&”' Ì¿'”( Ì¿(Ü ”  ÌÀ ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ”	 ÌÀ	”
+ ÌÀ
+” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀ” ÌÀÜ "”  ÌÁ ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ”	 ÌÁ	”
+ ÌÁ
+” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ”  ÌÁ ”! ÌÁ!Ü #”  ÌÂ ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”	 ÌÂ	”
+ ÌÂ
+” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”  ÌÂ ”! ÌÂ!”" ÌÂ"”  ÌÃ ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ”	 ÌÃ	”
+ ÌÃ
+” ÌÃ” ÌÃÜ #”  ÌÄ ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ”	 ÌÄ	”
+ ÌÄ
+” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ”  ÌÄ ”! ÌÄ!”" ÌÄ"Ü ”  ÌÅ ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ”	 ÌÅ	”
+ ÌÅ
+” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅÜ ”  ÌÆ ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ”	 ÌÆ	”
+ ÌÆ
+” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆ” ÌÆÜ ”  ÌÇ ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ”	 ÌÇ	”
+ ÌÇ
+” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇ” ÌÇÜ )”  ÌÈ ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ”	 ÌÈ	”
+ ÌÈ
+” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ” ÌÈ”  ÌÈ ”! ÌÈ!”" ÌÈ"”# ÌÈ#”$ ÌÈ$”% ÌÈ%”& ÌÈ&”' ÌÈ'”( ÌÈ(Ü ”  ÌÉ ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ”	 ÌÉ	”
+ ÌÉ
+” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉ” ÌÉÜ "”  ÌÊ ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ”	 ÌÊ	”
+ ÌÊ
+” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ”  ÌÊ ”! ÌÊ!Ü #”  ÌË ” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË”	 ÌË	”
+ ÌË
+” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË”  ÌË ”! ÌË!”" ÌË"”  ÌÌ ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ”	 ÌÌ	”
+ ÌÌ
+” ÌÌ” ÌÌÜ #”  ÌÍ ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”	 ÌÍ	”
+ ÌÍ
+” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”  ÌÍ ”! ÌÍ!”" ÌÍ"Ü ”  ÌÎ ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ”	 ÌÎ	”
+ ÌÎ
+” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎ” ÌÎÜ ”  ÌÏ ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ”	 ÌÏ	”
+ ÌÏ
+” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏ” ÌÏÜ ”  ÌÐ ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ”	 ÌÐ	”
+ ÌÐ
+” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐ” ÌÐÜ )”  ÌÑ ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ”	 ÌÑ	”
+ ÌÑ
+” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ” ÌÑ”  ÌÑ ”! ÌÑ!”" ÌÑ"”# ÌÑ#”$ ÌÑ$”% ÌÑ%”& ÌÑ&”' ÌÑ'”( ÌÑ(Ü ”  ÌÒ ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ”	 ÌÒ	”
+ ÌÒ
+” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒÜ "”  ÌÓ ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ”	 ÌÓ	”
+ ÌÓ
+” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ”  ÌÓ ”! ÌÓ!Ü &”  ÌÔ ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ”	 ÌÔ	”
+ ÌÔ
+” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ”  ÌÔ ”! ÌÔ!”" ÌÔ"”# ÌÔ#”$ ÌÔ$”% ÌÔ%”  ÌÕ ” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ”	 ÌÕ	”
+ ÌÕ
+” ÌÕ” ÌÕÜ J”  ÌÖ ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ”	 ÌÖ	”
+ ÌÖ
+” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ” ÌÖ”  ÌÖ ”! ÌÖ!”" ÌÖ"”# ÌÖ#”$ ÌÖ$”% ÌÖ%”& ÌÖ&”' ÌÖ'”( ÌÖ(”) ÌÖ)”* ÌÖ*”+ ÌÖ+”, ÌÖ,”- ÌÖ-”. ÌÖ.”/ ÌÖ/”0 ÌÖ0”1 ÌÖ1”2 ÌÖ2”3 ÌÖ3”4 ÌÖ4”5 ÌÖ5”6 ÌÖ6”7 ÌÖ7”8 ÌÖ8”9 ÌÖ9”: ÌÖ:”; ÌÖ;”< ÌÖ<”= ÌÖ=”> ÌÖ>”? ÌÖ?”Ì@ ÌÖÌ@”ÌA ÌÖÌA”ÌB ÌÖÌB”ÌC ÌÖÌC”ÌD ÌÖÌD”ÌE ÌÖÌE”ÌF ÌÖÌF”ÌG ÌÖÌG”ÌH ÌÖÌH”ÌI ÌÖÌIÜ #”  Ì× ” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×”	 Ì×	”
+ Ì×
+” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×” Ì×”  Ì× ”! Ì×!”" Ì×"Ü ”  ÌØ ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ”	 ÌØ	”
+ ÌØ
+” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØ” ÌØÜ ”  ÌÙ ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ”	 ÌÙ	”
+ ÌÙ
+” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙ” ÌÙÜ ”  ÌÚ ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ”	 ÌÚ	”
+ ÌÚ
+” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚÜ ”  ÌÛ ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ”	 ÌÛ	”
+ ÌÛ
+” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛÜ ”  ÌÜ ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ”	 ÌÜ	”
+ ÌÜ
+” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜÜ $”  ÌÝ ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ”	 ÌÝ	”
+ ÌÝ
+” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ” ÌÝ”  ÌÝ ”! ÌÝ!”" ÌÝ"”# ÌÝ#Ü #”  ÌÞ ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ”	 ÌÞ	”
+ ÌÞ
+” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ” ÌÞ”  ÌÞ ”! ÌÞ!”" ÌÞ"”  Ìß ” Ìß” Ìß” Ìß” Ìß” Ìß” Ìß” Ìß” Ìß”	 Ìß	”
+ Ìß
+” Ìß” ÌßÜ #”  Ìà ” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà”	 Ìà	”
+ Ìà
+” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà” Ìà”  Ìà ”! Ìà!”" Ìà"Ü ”  Ìá ” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá”	 Ìá	”
+ Ìá
+” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” Ìá” ÌáÜ ”  Ìâ ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ”	 Ìâ	”
+ Ìâ
+” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” ÌâÜ ”  Ìã ” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã”	 Ìã	”
+ Ìã
+” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” Ìã” ÌãÜ ”  Ìä ” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä”	 Ìä	”
+ Ìä
+” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” Ìä” ÌäÜ ”  Ìå ” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå”	 Ìå	”
+ Ìå
+” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” Ìå” ÌåÜ $”  Ìæ ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ”	 Ìæ	”
+ Ìæ
+” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ” Ìæ”  Ìæ ”! Ìæ!”" Ìæ"”# Ìæ#Ü $”  Ìç ” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç”	 Ìç	”
+ Ìç
+” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç” Ìç”  Ìç ”! Ìç!”" Ìç"”# Ìç#”  Ìè ” Ìè” Ìè” Ìè” Ìè” Ìè” Ìè” Ìè” Ìè”	 Ìè	”
+ Ìè
+” Ìè” ÌèÜ #”  Ìé ” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé”	 Ìé	”
+ Ìé
+” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé” Ìé”  Ìé ”! Ìé!”" Ìé"Ü ”  Ìê ” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê”	 Ìê	”
+ Ìê
+” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê” ÌêÜ ”  Ìë ” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë”	 Ìë	”
+ Ìë
+” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” Ìë” ÌëÜ ”  Ìì ” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì”	 Ìì	”
+ Ìì
+” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” Ìì” ÌìÜ  ”  Ìí ” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí”	 Ìí	”
+ Ìí
+” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” Ìí” ÌíÜ ”  Ìî ” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî”	 Ìî	”
+ Ìî
+” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” Ìî” ÌîÜ $”  Ìï ” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï”	 Ìï	”
+ Ìï
+” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï” Ìï”  Ìï ”! Ìï!”" Ìï"”# Ìï#Ü $”  Ìð ” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð”	 Ìð	”
+ Ìð
+” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð” Ìð”  Ìð ”! Ìð!”" Ìð"”# Ìð#”  Ìñ ” Ìñ” Ìñ” Ìñ” Ìñ” Ìñ” Ìñ” Ìñ” Ìñ”	 Ìñ	”
+ Ìñ
+” Ìñ” ÌñÜ #”  Ìò ” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò”	 Ìò	”
+ Ìò
+” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò” Ìò”  Ìò ”! Ìò!”" Ìò"Ü ”  Ìó ” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó”	 Ìó	”
+ Ìó
+” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” Ìó” ÌóÜ  ”  Ìô ” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô”	 Ìô	”
+ Ìô
+” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” Ìô” ÌôÜ ”  Ìõ ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ”	 Ìõ	”
+ Ìõ
+” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” Ìõ” ÌõÜ ”  Ìö ” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö”	 Ìö	”
+ Ìö
+” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” Ìö” ÌöÜ ”  Ì÷ ” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷”	 Ì÷	”
+ Ì÷
+” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷” Ì÷Ü $”  Ìø ” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø”	 Ìø	”
+ Ìø
+” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø” Ìø”  Ìø ”! Ìø!”" Ìø"”# Ìø#Ü #”  Ìù ” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù”	 Ìù	”
+ Ìù
+” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù” Ìù”  Ìù ”! Ìù!”" Ìù"”  Ìú ” Ìú” Ìú” Ìú” Ìú” Ìú” Ìú” Ìú” Ìú”	 Ìú	”
+ Ìú
+” Ìú” ÌúÜ #”  Ìû ” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû”	 Ìû	”
+ Ìû
+” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû”  Ìû ”! Ìû!”" Ìû"Ü ”  Ìü ” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü”	 Ìü	”
+ Ìü
+” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” Ìü” ÌüÜ ”  Ìý ” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý”	 Ìý	”
+ Ìý
+” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” Ìý” ÌýÜ ”  Ìþ ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ”	 Ìþ	”
+ Ìþ
+” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” Ìþ” ÌþÜ #”  Ìÿ ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ”	 Ìÿ	”
+ Ìÿ
+” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ” Ìÿ”  Ìÿ ”! Ìÿ!”" Ìÿ"Ü ”  Í  ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ”	 Í 	”
+ Í 
+” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í Ü $”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#Ü (”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” ÍÜ #”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"Ü ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” ÍÜ ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” ÍÜ ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” ÍÜ $”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#Ü ”  Í	 ” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	”	 Í		”
+ Í	
+” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	Ü $”  Í
+ ” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+”	 Í
+	”
+ Í
+
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+” Í
+”  Í
+ ”! Í
+!”" Í
+"”# Í
+#Ü #”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” ÍÜ )”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(Ü d”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0”1 Í1”2 Í2”3 Í3”4 Í4”5 Í5”6 Í6”7 Í7”8 Í8”9 Í9”: Í:”; Í;”< Í<”= Í=”> Í>”? Í?”Ì@ ÍÌ@”ÌA ÍÌA”ÌB ÍÌB”ÌC ÍÌC”ÌD ÍÌD”ÌE ÍÌE”ÌF ÍÌF”ÌG ÍÌG”ÌH ÍÌH”ÌI ÍÌI”ÌJ ÍÌJ”ÌK ÍÌK”ÌL ÍÌL”ÌM ÍÌM”ÌN ÍÌN”ÌO ÍÌO”ÌP ÍÌP”ÌQ ÍÌQ”ÌR ÍÌR”ÌS ÍÌS”ÌT ÍÌT”ÌU ÍÌU”ÌV ÍÌV”ÌW ÍÌW”ÌX ÍÌX”ÌY ÍÌY”ÌZ ÍÌZ”Ì[ ÍÌ[”Ì\ ÍÌ\”Ì] ÍÌ]”Ì^ ÍÌ^”Ì_ ÍÌ_”Ì` ÍÌ`”Ìa ÍÌa”Ìb ÍÌb”Ìc ÍÌc—”  Í ” Í” Í” Í” Í” Í” Í™”  Í ” Í” Í” Í” Í” Í” Í” Í” ÍÜ ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í™”  Í ” Í” Í” Í” Í” Í” Í” Í” ÍÜ !”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í Ü ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” ÍÜ 8”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0”1 Í1”2 Í2”3 Í3”4 Í4”5 Í5”6 Í6”7 Í7Ü R”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0”1 Í1”2 Í2”3 Í3”4 Í4”5 Í5”6 Í6”7 Í7”8 Í8”9 Í9”: Í:”; Í;”< Í<”= Í=”> Í>”? Í?”Ì@ ÍÌ@”ÌA ÍÌA”ÌB ÍÌB”ÌC ÍÌC”ÌD ÍÌD”ÌE ÍÌE”ÌF ÍÌF”ÌG ÍÌG”ÌH ÍÌH”ÌI ÍÌI”ÌJ ÍÌJ”ÌK ÍÌK”ÌL ÍÌL”ÌM ÍÌM”ÌN ÍÌN”ÌO ÍÌO”ÌP ÍÌP”ÌQ ÍÌQ›”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+Ü ”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” ÍÜ 0”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/Ü N”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0”1 Í1”2 Í2”3 Í3”4 Í4”5 Í5”6 Í6”7 Í7”8 Í8”9 Í9”: Í:”; Í;”< Í<”= Í=”> Í>”? Í?”Ì@ ÍÌ@”ÌA ÍÌA”ÌB ÍÌB”ÌC ÍÌC”ÌD ÍÌD”ÌE ÍÌE”ÌF ÍÌF”ÌG ÍÌG”ÌH ÍÌH”ÌI ÍÌI”ÌJ ÍÌJ”ÌK ÍÌK”ÌL ÍÌL”ÌM ÍÌM›”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+Ü 9”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0”1 Í1”2 Í2”3 Í3”4 Í4”5 Í5”6 Í6”7 Í7”8 Í8Ü 1”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)”* Í*”+ Í+”, Í,”- Í-”. Í.”/ Í/”0 Í0—”  Í ” Í” Í” Í” Í” Í” Í™”  Í ” Í” Í” Í” Í” Í” Í” Í” ÍÜ ”  Í  ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ”	 Í 	”
+ Í 
+” Í ” Í ” Í ” Í ” Í ™”  Í! ” Í!” Í!” Í!” Í!” Í!” Í!” Í!” Í!Ü %”  Í" ” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"”	 Í"	”
+ Í"
+” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"”  Í" ”! Í"!”" Í""”# Í"#”$ Í"$Ü :”  Í# ” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#”	 Í#	”
+ Í#
+” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#” Í#”  Í# ”! Í#!”" Í#"”# Í##”$ Í#$”% Í#%”& Í#&”' Í#'”( Í#(”) Í#)”* Í#*”+ Í#+”, Í#,”- Í#-”. Í#.”/ Í#/”0 Í#0”1 Í#1”2 Í#2”3 Í#3”4 Í#4”5 Í#5”6 Í#6”7 Í#7”8 Í#8”9 Í#9Ü ”  Í$ ” Í$” Í$” Í$” Í$” Í$” Í$” Í$” Í$”	 Í$	”
+ Í$
+” Í$” Í$” Í$” Í$” Í$” Í$” Í$” Í$” Í$” Í$” Í$Ü 3”  Í% ” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%”	 Í%	”
+ Í%
+” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%” Í%”  Í% ”! Í%!”" Í%"”# Í%#”$ Í%$”% Í%%”& Í%&”' Í%'”( Í%(”) Í%)”* Í%*”+ Í%+”, Í%,”- Í%-”. Í%.”/ Í%/”0 Í%0”1 Í%1”2 Í%2Ü 1”  Í& ” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&”	 Í&	”
+ Í&
+” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&” Í&”  Í& ”! Í&!”" Í&"”# Í&#”$ Í&$”% Í&%”& Í&&”' Í&'”( Í&(”) Í&)”* Í&*”+ Í&+”, Í&,”- Í&-”. Í&.”/ Í&/”0 Í&0Ü ”  Í' ” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'”	 Í'	”
+ Í'
+” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'›”  Í( ” Í(” Í(” Í(” Í(” Í(” Í(” Í(” Í(”	 Í(	”
+ Í(
+Ü ”  Í) ” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)”	 Í)	”
+ Í)
+” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)” Í)—”  Í* ” Í*” Í*” Í*” Í*” Í*” Í*™”  Í+ ” Í+” Í+” Í+” Í+” Í+” Í+” Í+” Í+Ü ”  Í, ” Í,” Í,” Í,” Í,” Í,” Í,” Í,” Í,”	 Í,	”
+ Í,
+” Í,” Í,” Í,” Í,” Í,” Í,” Í,” Í,™”  Í- ” Í-” Í-” Í-” Í-” Í-” Í-” Í-” Í-Ü "”  Í. ” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.”	 Í.	”
+ Í.
+” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.”  Í. ”! Í.!Ü 3”  Í/ ” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/”	 Í/	”
+ Í/
+” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/”  Í/ ”! Í/!”" Í/"”# Í/#”$ Í/$”% Í/%”& Í/&”' Í/'”( Í/(”) Í/)”* Í/*”+ Í/+”, Í/,”- Í/-”. Í/.”/ Í//”0 Í/0”1 Í/1”2 Í/2—”  Í0 ” Í0” Í0” Í0” Í0” Í0” Í0™”  Í1 ” Í1” Í1” Í1” Í1” Í1” Í1” Í1” Í1Ü ”  Í2 ” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2”	 Í2	”
+ Í2
+” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2” Í2™”  Í3 ” Í3” Í3” Í3” Í3” Í3” Í3” Í3” Í3Ü "”  Í4 ” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4”	 Í4	”
+ Í4
+” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4”  Í4 ”! Í4!Ü +”  Í5 ” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5”	 Í5	”
+ Í5
+” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5”  Í5 ”! Í5!”" Í5"”# Í5#”$ Í5$”% Í5%”& Í5&”' Í5'”( Í5(”) Í5)”* Í5*—”  Í6 ” Í6” Í6” Í6” Í6” Í6” Í6™”  Í7 ” Í7” Í7” Í7” Í7” Í7” Í7” Í7” Í7Ü ”  Í8 ” Í8” Í8” Í8” Í8” Í8” Í8” Í8” Í8”	 Í8	”
+ Í8
+” Í8” Í8” Í8” Í8” Í8” Í8” Í8” Í8™”  Í9 ” Í9” Í9” Í9” Í9” Í9” Í9” Í9” Í9Ü ”  Í: ” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:”	 Í:	”
+ Í:
+” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:” Í:Ü :”  Í; ” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;”	 Í;	”
+ Í;
+” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;” Í;”  Í; ”! Í;!”" Í;"”# Í;#”$ Í;$”% Í;%”& Í;&”' Í;'”( Í;(”) Í;)”* Í;*”+ Í;+”, Í;,”- Í;-”. Í;.”/ Í;/”0 Í;0”1 Í;1”2 Í;2”3 Í;3”4 Í;4”5 Í;5”6 Í;6”7 Í;7”8 Í;8”9 Í;9—”  Í< ” Í<” Í<” Í<” Í<” Í<” Í<™”  Í= ” Í=” Í=” Í=” Í=” Í=” Í=” Í=” Í=Ü ”  Í> ” Í>” Í>” Í>” Í>” Í>” Í>” Í>” Í>”	 Í>	”
+ Í>
+” Í>” Í>” Í>” Í>” Í>” Í>™”  Í? ” Í?” Í?” Í?” Í?” Í?” Í?” Í?” Í?Ü  ”  Í@ ” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@”	 Í@	”
+ Í@
+” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@” Í@Ü <”  ÍA ” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA”	 ÍA	”
+ ÍA
+” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA”  ÍA ”! ÍA!”" ÍA"”# ÍA#”$ ÍA$”% ÍA%”& ÍA&”' ÍA'”( ÍA(”) ÍA)”* ÍA*”+ ÍA+”, ÍA,”- ÍA-”. ÍA.”/ ÍA/”0 ÍA0”1 ÍA1”2 ÍA2”3 ÍA3”4 ÍA4”5 ÍA5”6 ÍA6”7 ÍA7”8 ÍA8”9 ÍA9”: ÍA:”; ÍA;—”  ÍB ” ÍB” ÍB” ÍB” ÍB” ÍB” ÍB™”  ÍC ” ÍC” ÍC” ÍC” ÍC” ÍC” ÍC” ÍC” ÍCÜ ”  ÍD ” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD”	 ÍD	”
+ ÍD
+” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD™”  ÍE ” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE” ÍEÜ /”  ÍF ” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF”	 ÍF	”
+ ÍF
+” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF” ÍF”  ÍF ”! ÍF!”" ÍF"”# ÍF#”$ ÍF$”% ÍF%”& ÍF&”' ÍF'”( ÍF(”) ÍF)”* ÍF*”+ ÍF+”, ÍF,”- ÍF-”. ÍF.Ü \”  ÍG ” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG”	 ÍG	”
+ ÍG
+” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG” ÍG”  ÍG ”! ÍG!”" ÍG"”# ÍG#”$ ÍG$”% ÍG%”& ÍG&”' ÍG'”( ÍG(”) ÍG)”* ÍG*”+ ÍG+”, ÍG,”- ÍG-”. ÍG.”/ ÍG/”0 ÍG0”1 ÍG1”2 ÍG2”3 ÍG3”4 ÍG4”5 ÍG5”6 ÍG6”7 ÍG7”8 ÍG8”9 ÍG9”: ÍG:”; ÍG;”< ÍG<”= ÍG=”> ÍG>”? ÍG?”Ì@ ÍGÌ@”ÌA ÍGÌA”ÌB ÍGÌB”ÌC ÍGÌC”ÌD ÍGÌD”ÌE ÍGÌE”ÌF ÍGÌF”ÌG ÍGÌG”ÌH ÍGÌH”ÌI ÍGÌI”ÌJ ÍGÌJ”ÌK ÍGÌK”ÌL ÍGÌL”ÌM ÍGÌM”ÌN ÍGÌN”ÌO ÍGÌO”ÌP ÍGÌP”ÌQ ÍGÌQ”ÌR ÍGÌR”ÌS ÍGÌS”ÌT ÍGÌT”ÌU ÍGÌU”ÌV ÍGÌV”ÌW ÍGÌW”ÌX ÍGÌX”ÌY ÍGÌY”ÌZ ÍGÌZ”Ì[ ÍGÌ[—”  ÍH ” ÍH” ÍH” ÍH” ÍH” ÍH” ÍH™”  ÍI ” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI” ÍIÜ ”  ÍJ ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ”	 ÍJ	”
+ ÍJ
+” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ™”  ÍK ” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍKÜ !”  ÍL ” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL”	 ÍL	”
+ ÍL
+” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL”  ÍL Ü 3”  ÍM ” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM”	 ÍM	”
+ ÍM
+” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM” ÍM”  ÍM ”! ÍM!”" ÍM"”# ÍM#”$ ÍM$”% ÍM%”& ÍM&”' ÍM'”( ÍM(”) ÍM)”* ÍM*”+ ÍM+”, ÍM,”- ÍM-”. ÍM.”/ ÍM/”0 ÍM0”1 ÍM1”2 ÍM2—”  ÍN ” ÍN” ÍN” ÍN” ÍN” ÍN” ÍN™”  ÍO ” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO” ÍOÜ ”  ÍP ” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP”	 ÍP	”
+ ÍP
+” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP” ÍP™”  ÍQ ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQÜ '”  ÍR ” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR”	 ÍR	”
+ ÍR
+” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR”  ÍR ”! ÍR!”" ÍR"”# ÍR#”$ ÍR$”% ÍR%”& ÍR&Ü 8”  ÍS ” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS”	 ÍS	”
+ ÍS
+” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS” ÍS”  ÍS ”! ÍS!”" ÍS"”# ÍS#”$ ÍS$”% ÍS%”& ÍS&”' ÍS'”( ÍS(”) ÍS)”* ÍS*”+ ÍS+”, ÍS,”- ÍS-”. ÍS.”/ ÍS/”0 ÍS0”1 ÍS1”2 ÍS2”3 ÍS3”4 ÍS4”5 ÍS5”6 ÍS6”7 ÍS7Ü ”  ÍT ” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT”	 ÍT	”
+ ÍT
+” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT” ÍT—”  ÍU ” ÍU” ÍU” ÍU” ÍU” ÍU” ÍU™”  ÍV ” ÍV” ÍV” ÍV” ÍV” ÍV” ÍV” ÍV” ÍVÜ ”  ÍW ” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW”	 ÍW	”
+ ÍW
+” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW™”  ÍX ” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX” ÍXÜ 1”  ÍY ” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY”	 ÍY	”
+ ÍY
+” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY” ÍY”  ÍY ”! ÍY!”" ÍY"”# ÍY#”$ ÍY$”% ÍY%”& ÍY&”' ÍY'”( ÍY(”) ÍY)”* ÍY*”+ ÍY+”, ÍY,”- ÍY-”. ÍY.”/ ÍY/”0 ÍY0Ü ”  ÍZ ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ”	 ÍZ	”
+ ÍZ
+” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZÜ !”  Í[ ” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[”	 Í[	”
+ Í[
+” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[”  Í[ Ü Z”  Í\ ” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\”	 Í\	”
+ Í\
+” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\” Í\”  Í\ ”! Í\!”" Í\"”# Í\#”$ Í\$”% Í\%”& Í\&”' Í\'”( Í\(”) Í\)”* Í\*”+ Í\+”, Í\,”- Í\-”. Í\.”/ Í\/”0 Í\0”1 Í\1”2 Í\2”3 Í\3”4 Í\4”5 Í\5”6 Í\6”7 Í\7”8 Í\8”9 Í\9”: Í\:”; Í\;”< Í\<”= Í\=”> Í\>”? Í\?”Ì@ Í\Ì@”ÌA Í\ÌA”ÌB Í\ÌB”ÌC Í\ÌC”ÌD Í\ÌD”ÌE Í\ÌE”ÌF Í\ÌF”ÌG Í\ÌG”ÌH Í\ÌH”ÌI Í\ÌI”ÌJ Í\ÌJ”ÌK Í\ÌK”ÌL Í\ÌL”ÌM Í\ÌM”ÌN Í\ÌN”ÌO Í\ÌO”ÌP Í\ÌP”ÌQ Í\ÌQ”ÌR Í\ÌR”ÌS Í\ÌS”ÌT Í\ÌT”ÌU Í\ÌU”ÌV Í\ÌV”ÌW Í\ÌW”ÌX Í\ÌX”ÌY Í\ÌYÜ ”  Í] ” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]”	 Í]	”
+ Í]
+” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]” Í]Ü )”  Í^ ” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^”	 Í^	”
+ Í^
+” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^”  Í^ ”! Í^!”" Í^"”# Í^#”$ Í^$”% Í^%”& Í^&”' Í^'”( Í^(Ü A”  Í_ ” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_”	 Í_	”
+ Í_
+” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_”  Í_ ”! Í_!”" Í_"”# Í_#”$ Í_$”% Í_%”& Í_&”' Í_'”( Í_(”) Í_)”* Í_*”+ Í_+”, Í_,”- Í_-”. Í_.”/ Í_/”0 Í_0”1 Í_1”2 Í_2”3 Í_3”4 Í_4”5 Í_5”6 Í_6”7 Í_7”8 Í_8”9 Í_9”: Í_:”; Í_;”< Í_<”= Í_=”> Í_>”? Í_?”Ì@ Í_Ì@Ü ”  Í` ” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`”	 Í`	”
+ Í`
+” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`” Í`Ü P”  Ía ” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía”	 Ía	”
+ Ía
+” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía” Ía”  Ía ”! Ía!”" Ía"”# Ía#”$ Ía$”% Ía%”& Ía&”' Ía'”( Ía(”) Ía)”* Ía*”+ Ía+”, Ía,”- Ía-”. Ía.”/ Ía/”0 Ía0”1 Ía1”2 Ía2”3 Ía3”4 Ía4”5 Ía5”6 Ía6”7 Ía7”8 Ía8”9 Ía9”: Ía:”; Ía;”< Ía<”= Ía=”> Ía>”? Ía?”Ì@ ÍaÌ@”ÌA ÍaÌA”ÌB ÍaÌB”ÌC ÍaÌC”ÌD ÍaÌD”ÌE ÍaÌE”ÌF ÍaÌF”ÌG ÍaÌG”ÌH ÍaÌH”ÌI ÍaÌI”ÌJ ÍaÌJ”ÌK ÍaÌK”ÌL ÍaÌL”ÌM ÍaÌM”ÌN ÍaÌN”ÌO ÍaÌOÜ /”  Íb ” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb”	 Íb	”
+ Íb
+” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb” Íb”  Íb ”! Íb!”" Íb"”# Íb#”$ Íb$”% Íb%”& Íb&”' Íb'”( Íb(”) Íb)”* Íb*”+ Íb+”, Íb,”- Íb-”. Íb.Ü *”  Íc ” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc”	 Íc	”
+ Íc
+” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc” Íc”  Íc ”! Íc!”" Íc"”# Íc#”$ Íc$”% Íc%”& Íc&”' Íc'”( Íc(”) Íc)Ü !”  Íd ” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd”	 Íd	”
+ Íd
+” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd” Íd”  Íd Ü U”  Íe ” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe”	 Íe	”
+ Íe
+” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe”  Íe ”! Íe!”" Íe"”# Íe#”$ Íe$”% Íe%”& Íe&”' Íe'”( Íe(”) Íe)”* Íe*”+ Íe+”, Íe,”- Íe-”. Íe.”/ Íe/”0 Íe0”1 Íe1”2 Íe2”3 Íe3”4 Íe4”5 Íe5”6 Íe6”7 Íe7”8 Íe8”9 Íe9”: Íe:”; Íe;”< Íe<”= Íe=”> Íe>”? Íe?”Ì@ ÍeÌ@”ÌA ÍeÌA”ÌB ÍeÌB”ÌC ÍeÌC”ÌD ÍeÌD”ÌE ÍeÌE”ÌF ÍeÌF”ÌG ÍeÌG”ÌH ÍeÌH”ÌI ÍeÌI”ÌJ ÍeÌJ”ÌK ÍeÌK”ÌL ÍeÌL”ÌM ÍeÌM”ÌN ÍeÌN”ÌO ÍeÌO”ÌP ÍeÌP”ÌQ ÍeÌQ”ÌR ÍeÌR”ÌS ÍeÌS”ÌT ÍeÌTÜ ”  Íf ” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf”	 Íf	”
+ Íf
+” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf” ÍfÜ E”  Íg ” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg”	 Íg	”
+ Íg
+” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg” Íg”  Íg ”! Íg!”" Íg"”# Íg#”$ Íg$”% Íg%”& Íg&”' Íg'”( Íg(”) Íg)”* Íg*”+ Íg+”, Íg,”- Íg-”. Íg.”/ Íg/”0 Íg0”1 Íg1”2 Íg2”3 Íg3”4 Íg4”5 Íg5”6 Íg6”7 Íg7”8 Íg8”9 Íg9”: Íg:”; Íg;”< Íg<”= Íg=”> Íg>”? Íg?”Ì@ ÍgÌ@”ÌA ÍgÌA”ÌB ÍgÌB”ÌC ÍgÌC”ÌD ÍgÌDÜ <”  Íh ” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh”	 Íh	”
+ Íh
+” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh” Íh”  Íh ”! Íh!”" Íh"”# Íh#”$ Íh$”% Íh%”& Íh&”' Íh'”( Íh(”) Íh)”* Íh*”+ Íh+”, Íh,”- Íh-”. Íh.”/ Íh/”0 Íh0”1 Íh1”2 Íh2”3 Íh3”4 Íh4”5 Íh5”6 Íh6”7 Íh7”8 Íh8”9 Íh9”: Íh:”; Íh;Ü ”  Íi ” Íi” Íi” Íi” Íi” Íi” Íi” Íi” Íi”	 Íi	”
+ Íi
+” Íi” Íi” Íi” Íi” Íi” Íi” Íi” ÍiÜ ”  Íj ” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj”	 Íj	”
+ Íj
+” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” Íj” ÍjÜ X”  Ík ” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík”	 Ík	”
+ Ík
+” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík” Ík”  Ík ”! Ík!”" Ík"”# Ík#”$ Ík$”% Ík%”& Ík&”' Ík'”( Ík(”) Ík)”* Ík*”+ Ík+”, Ík,”- Ík-”. Ík.”/ Ík/”0 Ík0”1 Ík1”2 Ík2”3 Ík3”4 Ík4”5 Ík5”6 Ík6”7 Ík7”8 Ík8”9 Ík9”: Ík:”; Ík;”< Ík<”= Ík=”> Ík>”? Ík?”Ì@ ÍkÌ@”ÌA ÍkÌA”ÌB ÍkÌB”ÌC ÍkÌC”ÌD ÍkÌD”ÌE ÍkÌE”ÌF ÍkÌF”ÌG ÍkÌG”ÌH ÍkÌH”ÌI ÍkÌI”ÌJ ÍkÌJ”ÌK ÍkÌK”ÌL ÍkÌL”ÌM ÍkÌM”ÌN ÍkÌN”ÌO ÍkÌO”ÌP ÍkÌP”ÌQ ÍkÌQ”ÌR ÍkÌR”ÌS ÍkÌS”ÌT ÍkÌT”ÌU ÍkÌU”ÌV ÍkÌV”ÌW ÍkÌWÜ ”  Íl ” Íl” Íl” Íl” Íl” Íl” Íl” Íl” Íl”	 Íl	”
+ Íl
+” Íl” Íl” Íl” Íl” Íl” Íl” Íl” ÍlŸ”  Ím ” Ím” Ím” Ím” Ím” Ím” Ím” Ím” Ím”	 Ím	”
+ Ím
+” Ím” Ím” Ím” Ím›”  Ín ” Ín” Ín” Ín” Ín” Ín” Ín” Ín” Ín”	 Ín	”
+ Ín
+Ü ”  Ío ” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío”	 Ío	”
+ Ío
+” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío” Ío—”  Íp ” Íp” Íp” Íp” Íp” Íp” Íp™”  Íq ” Íq” Íq” Íq” Íq” Íq” Íq” Íq” ÍqÜ ”  Ír ” Ír” Ír” Ír” Ír” Ír” Ír” Ír” Ír”	 Ír	”
+ Ír
+” Ír” Ír” Ír” Ír” Ír” Ír™”  Ís ” Ís” Ís” Ís” Ís” Ís” Ís” Ís” ÍsÜ !”  Ít ” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít”	 Ít	”
+ Ít
+” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít” Ít”  Ít Ü '”  Íu ” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu”	 Íu	”
+ Íu
+” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu” Íu”  Íu ”! Íu!”" Íu"”# Íu#”$ Íu$”% Íu%”& Íu&Ü >”  Ív ” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív”	 Ív	”
+ Ív
+” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív” Ív”  Ív ”! Ív!”" Ív"”# Ív#”$ Ív$”% Ív%”& Ív&”' Ív'”( Ív(”) Ív)”* Ív*”+ Ív+”, Ív,”- Ív-”. Ív.”/ Ív/”0 Ív0”1 Ív1”2 Ív2”3 Ív3”4 Ív4”5 Ív5”6 Ív6”7 Ív7”8 Ív8”9 Ív9”: Ív:”; Ív;”< Ív<”= Ív=Ü -”  Íw ” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw”	 Íw	”
+ Íw
+” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw” Íw”  Íw ”! Íw!”" Íw"”# Íw#”$ Íw$”% Íw%”& Íw&”' Íw'”( Íw(”) Íw)”* Íw*”+ Íw+”, Íw,›”  Íx ” Íx” Íx” Íx” Íx” Íx” Íx” Íx” Íx”	 Íx	”
+ Íx
+Ü (”  Íy ” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy”	 Íy	”
+ Íy
+” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy” Íy”  Íy ”! Íy!”" Íy"”# Íy#”$ Íy$”% Íy%”& Íy&”' Íy'—”  Íz ” Íz” Íz” Íz” Íz” Íz” Íz™”  Í{ ” Í{” Í{” Í{” Í{” Í{” Í{” Í{” Í{ž”  Í| ” Í|” Í|” Í|” Í|” Í|” Í|” Í|” Í|”	 Í|	”
+ Í|
+” Í|” Í|” Í|™”  Í} ” Í}” Í}” Í}” Í}” Í}” Í}” Í}” Í}Ü ”  Í~ ” Í~” Í~” Í~” Í~” Í~” Í~” Í~” Í~”	 Í~	”
+ Í~
+” Í~” Í~” Í~” Í~” Í~” Í~” Í~” Í~” Í~” Í~” Í~Ü (”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'Ü $”  Í€ ” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€”	 Í€	”
+ Í€
+” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€” Í€”  Í€ ”! Í€!”" Í€"”# Í€#Ü *”  Í ” Í” Í” Í” Í” Í” Í” Í” Í”	 Í	”
+ Í
+” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í” Í”  Í ”! Í!”" Í"”# Í#”$ Í$”% Í%”& Í&”' Í'”( Í(”) Í)—”  Í‚ ” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚“”  Íƒ ” Íƒ” ÍƒÜ ”  Í„ ” Í„” Í„” Í„” Í„” Í„” Í„” Í„” Í„”	 Í„	”
+ Í„
+” Í„” Í„” Í„” Í„” Í„” Í„” Í„” Í„” Í„” Í„Ü $”  Í… ” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…”	 Í…	”
+ Í…
+” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…”  Í… ”! Í…!”" Í…"”# Í…#Ü ”  Í† ” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†”	 Í†	”
+ Í†
+” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†” Í†Ü  ”  Í‡ ” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡”	 Í‡	”
+ Í‡
+” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡” Í‡›”  Íˆ ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ”	 Íˆ	”
+ Íˆ
+Ü "”  Í‰ ” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰”	 Í‰	”
+ Í‰
+” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰”  Í‰ ”! Í‰!Ü '”  ÍŠ ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ”	 ÍŠ	”
+ ÍŠ
+” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ” ÍŠ”  ÍŠ ”! ÍŠ!”" ÍŠ"”# ÍŠ#”$ ÍŠ$”% ÍŠ%”& ÍŠ&ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache‘ÔrJ–¤type¥start£end«declarationªspecifiers¦source¶ExportNamedDeclarationÍeÍ,ïÔrK–¤type¥start£end¢idªsuperClass¤body°ClassDeclarationÍlÍ,ïÔrL”¤type¥start£end¤nameªIdentifierÍrÍ}«ConstantLibÀÔrM”¤type¥start£end¤body©ClassBodyÍ~Í,ïÔrN˜¤type¥start£end¦static¨computed£key¤kind¥value°MethodDefinitionÍ¦ÍëÃÂLªIdentifierÍ­Í·ªinitialize¦methodÔrO™¤type¥start£end¢idªexpression©generator¥async¦params¤body²FunctionExpressionÍ·ÍëÀÂÂÂM®BlockStatementÍºÍëÜ ÔrP–¤type¥start£end¤testªconsequent©alternate«IfStatementÍÅÍÔrQ—¤type¥start£end¦object¨property¨computed¨optional°MemberExpressionÍÉÍàLªIdentifierÍÉÍÔ«ConstantLibLªIdentifierÍÕÍà«initializedÂÂM®BlockStatementÍâÍ‘ÔrR”¤type¥start£end¨argument¯ReturnStatementÍñÍøÀÀÔrS”¤type¥start£endªexpression³ExpressionStatementÍWÍ@ÔrT–¤type¥start£end¦callee©arguments¨optional®CallExpressionÍWÍ?Q°MemberExpressionÍWÍnLªIdentifierÍWÍb«ConstantLibLªIdentifierÍcÍn«addConstantÂÂ‘ÔrU”¤type¥start£endªproperties°ObjectExpressionÍoÍ>–ÔrV™¤type¥start£end¦method©shorthand¨computed£key¥value¤kind¨PropertyÍ~Í†ÂÂÂLªIdentifierÍ~Í€¢idÔrW•¤type¥start£end¥value£raw§LiteralÍ‚Í†¢pi¤'pi'¤initV¨PropertyÍ•Í ÂÂÂLªIdentifierÍ•Í›¦symbolW§LiteralÍÍ ¢Ï€¤'Ï€'¤initV¨PropertyÍ¯ÍºÂÂÂLªIdentifierÍ¯Í³¤nameW§LiteralÍµÍº©åœ†å‘¨çŽ‡«'åœ†å‘¨çŽ‡'¤initV¨PropertyÍÉÍèÂÂÂLªIdentifierÍÉÍÎ¥valueW§LiteralÍÐÍè¶3.14159265358979323846¸'3.14159265358979323846'¤initV¨PropertyÍ÷ÍÂÂÂLªIdentifierÍ÷Íÿ¨categoryW§LiteralÍÍ¤math¦'math'¤initV¨PropertyÍÍ3ÂÂÂLªIdentifierÍÍ!«descriptionW§LiteralÍ#Í3¯Ï€ = 3.14159...±'Ï€ = 3.14159...'¤initÂS³ExpressionStatementÍJÍ,T®CallExpressionÍJÍ+Q°MemberExpressionÍJÍaLªIdentifierÍJÍU«ConstantLibLªIdentifierÍVÍa«addConstantÂÂ‘U°ObjectExpressionÍbÍ*–V¨PropertyÍqÍxÂÂÂLªIdentifierÍqÍs¢idW§LiteralÍuÍx¡e£'e'¤initV¨PropertyÍ‡Í’ÂÂÂLªIdentifierÍ‡Í¦symbolW§LiteralÍÍ’¡e£'e'¤initV¨PropertyÍ¡Í­ÂÂÂLªIdentifierÍ¡Í¥¤nameW§LiteralÍ§Í­¬è‡ªç„¶å¸¸æ•°®'è‡ªç„¶å¸¸æ•°'¤initV¨PropertyÍ¼ÍÛÂÂÂLªIdentifierÍ¼ÍÁ¥valueW§LiteralÍÃÍÛ¶2.71828182845904523536¸'2.71828182845904523536'¤initV¨PropertyÍêÍúÂÂÂLªIdentifierÍêÍò¨categoryW§LiteralÍôÍú¤math¦'math'¤initV¨PropertyÍ	ÍÂÂÂLªIdentifierÍ	Í«descriptionW§LiteralÍÍµè‡ªç„¶å¯¹æ•°çš„åº•æ•°·'è‡ªç„¶å¯¹æ•°çš„åº•æ•°'¤initÂS³ExpressionStatementÍ6ÍT®CallExpressionÍ6ÍQ°MemberExpressionÍ6ÍMLªIdentifierÍ6ÍA«ConstantLibLªIdentifierÍBÍM«addConstantÂÂ‘U°ObjectExpressionÍNÍ–V¨PropertyÍ]ÍfÂÂÂLªIdentifierÍ]Í_¢idW§LiteralÍaÍf£phi¥'phi'¤initV¨PropertyÍuÍ€ÂÂÂLªIdentifierÍuÍ{¦symbolW§LiteralÍ}Í€¢Ï†¤'Ï†'¤initV¨PropertyÍÍ›ÂÂÂLªIdentifierÍÍ“¤nameW§LiteralÍ•Í›¬é»„é‡‘æ¯”ä¾‹®'é»„é‡‘æ¯”ä¾‹'¤initV¨PropertyÍªÍÉÂÂÂLªIdentifierÍªÍ¯¥valueW§LiteralÍ±ÍÉ¶1.61803398874989484820¸'1.61803398874989484820'¤initV¨PropertyÍØÍèÂÂÂLªIdentifierÍØÍà¨categoryW§LiteralÍâÍè¤math¦'math'¤initV¨PropertyÍ÷ÍÂÂÂLªIdentifierÍ÷Í«descriptionW§LiteralÍÍª(1+âˆš5)/2¬'(1+âˆš5)/2'¤initÂS³ExpressionStatementÍ%Í"T®CallExpressionÍ%Í!Q°MemberExpressionÍ%Í<LªIdentifierÍ%Í0«ConstantLibLªIdentifierÍ1Í<«addConstantÂÂ‘U°ObjectExpressionÍ=Í –V¨PropertyÍLÍWÂÂÂLªIdentifierÍLÍN¢idW§LiteralÍPÍW¥euler§'euler'¤initV¨PropertyÍfÍqÂÂÂLªIdentifierÍfÍl¦symbolW§LiteralÍnÍq¢Î³¤'Î³'¤initV¨PropertyÍ€Í‘ÂÂÂLªIdentifierÍ€Í„¤nameW§LiteralÍ†Í‘¹æ¬§æ‹‰-é©¬æ­‡ç½—å°¼å¸¸æ•°»'æ¬§æ‹‰-é©¬æ­‡ç½—å°¼å¸¸æ•°'¤initV¨PropertyÍ Í¿ÂÂÂLªIdentifierÍ Í¥¥valueW§LiteralÍ§Í¿¶0.57721566490153286060¸'0.57721566490153286060'¤initV¨PropertyÍÎÍÞÂÂÂLªIdentifierÍÎÍÖ¨categoryW§LiteralÍØÍÞ¤math¦'math'¤initV¨PropertyÍíÍÂÂÂLªIdentifierÍíÍø«descriptionW§LiteralÍúÍ»Eulerâ€“Mascheroni constant½'Eulerâ€“Mascheroni constant'¤initÂS³ExpressionStatementÍ	Í
+vT®CallExpressionÍ	Í
+uQ°MemberExpressionÍ	Í	˜LªIdentifierÍ	Í	Œ«ConstantLibLªIdentifierÍ	Í	˜«addConstantÂÂ‘U°ObjectExpressionÍ	™Í
+t—V¨PropertyÍ	¨Í	µÂÂÂLªIdentifierÍ	¨Í	ª¢idW§LiteralÍ	¬Í	µ§c_light©'c_light'¤initV¨PropertyÍ	ÄÍ	ÏÂÂÂLªIdentifierÍ	ÄÍ	Ê¦symbolW§LiteralÍ	ÌÍ	Ï¡c£'c'¤initV¨PropertyÍ	ÞÍ	èÂÂÂLªIdentifierÍ	ÞÍ	â¤nameW§LiteralÍ	äÍ	è¦å…‰é€Ÿ¨'å…‰é€Ÿ'¤initV¨PropertyÍ	÷Í
+	ÂÂÂLªIdentifierÍ	÷Í	ü¥valueW§LiteralÍ	þÍ
+	©299792458«'299792458'¤initV¨PropertyÍ
+Í
+#ÂÂÂLªIdentifierÍ
+Í
+¤unitW§LiteralÍ
+Í
+#£m/s¥'m/s'¤initV¨PropertyÍ
+2Í
+EÂÂÂLªIdentifierÍ
+2Í
+:¨categoryW§LiteralÍ
+<Í
+E§physics©'physics'¤initV¨PropertyÍ
+TÍ
+iÂÂÂLªIdentifierÍ
+TÍ
+_«descriptionW§LiteralÍ
+aÍ
+i²çœŸç©ºä¸­çš„å…‰é€Ÿ´'çœŸç©ºä¸­çš„å…‰é€Ÿ'¤initÂS³ExpressionStatementÍ
+€Í€T®CallExpressionÍ
+€ÍQ°MemberExpressionÍ
+€Í
+—LªIdentifierÍ
+€Í
+‹«ConstantLibLªIdentifierÍ
+ŒÍ
+—«addConstantÂÂ‘U°ObjectExpressionÍ
+˜Í~—V¨PropertyÍ
+§Í
+µÂÂÂLªIdentifierÍ
+§Í
+©¢idW§LiteralÍ
+«Í
+µ¨h_planckª'h_planck'¤initV¨PropertyÍ
+ÄÍ
+ÏÂÂÂLªIdentifierÍ
+ÄÍ
+Ê¦symbolW§LiteralÍ
+ÌÍ
+Ï¡h£'h'¤initV¨PropertyÍ
+ÞÍ
+ëÂÂÂLªIdentifierÍ
+ÞÍ
+â¤nameW§LiteralÍ
+äÍ
+ë¯æ™®æœ—å…‹å¸¸æ•°±'æ™®æœ—å…‹å¸¸æ•°'¤initV¨PropertyÍ
+úÍÂÂÂLªIdentifierÍ
+úÍ
+ÿ¥valueW§LiteralÍÍ®6.62607015e-34°'6.62607015e-34'¤initV¨PropertyÍ Í+ÂÂÂLªIdentifierÍ Í$¤unitW§LiteralÍ&Í+¤JÂ·s¦'JÂ·s'¤initV¨PropertyÍ:ÍMÂÂÂLªIdentifierÍ:ÍB¨categoryW§LiteralÍDÍM§physics©'physics'¤initV¨PropertyÍ\ÍsÂÂÂLªIdentifierÍ\Íg«descriptionW§LiteralÍiÍs¸é‡å­åŠ›å­¦åŸºæœ¬å¸¸æ•°º'é‡å­åŠ›å­¦åŸºæœ¬å¸¸æ•°'¤initÂS³ExpressionStatementÍŠÍƒT®CallExpressionÍŠÍ‚Q°MemberExpressionÍŠÍ¡LªIdentifierÍŠÍ•«ConstantLibLªIdentifierÍ–Í¡«addConstantÂÂ‘U°ObjectExpressionÍ¢Í—V¨PropertyÍ±Í»ÂÂÂLªIdentifierÍ±Í³¢idW§LiteralÍµÍ»¤hbar¦'hbar'¤initV¨PropertyÍÊÍÕÂÂÂLªIdentifierÍÊÍÐ¦symbolW§LiteralÍÒÍÕ£â„¥'â„'¤initV¨PropertyÍäÍñÂÂÂLªIdentifierÍäÍè¤nameW§LiteralÍêÍñ¯çº¦åŒ–æ™®æœ—å…‹±'çº¦åŒ–æ™®æœ—å…‹'¤initV¨PropertyÍ ÍÂÂÂLªIdentifierÍ Í¥valueW§LiteralÍÍ¯1.054571817e-34±'1.054571817e-34'¤initV¨PropertyÍ'Í2ÂÂÂLªIdentifierÍ'Í+¤unitW§LiteralÍ-Í2¤JÂ·s¦'JÂ·s'¤initV¨PropertyÍAÍTÂÂÂLªIdentifierÍAÍI¨categoryW§LiteralÍKÍT§physics©'physics'¤initV¨PropertyÍcÍvÂÂÂLªIdentifierÍcÍn«descriptionW§LiteralÍpÍv¥h/2Ï€§'h/2Ï€'¤initÂS³ExpressionStatementÍÍ„T®CallExpressionÍÍƒQ°MemberExpressionÍÍ¤LªIdentifierÍÍ˜«ConstantLibLªIdentifierÍ™Í¤«addConstantÂÂ‘U°ObjectExpressionÍ¥Í‚—V¨PropertyÍ´ÍÀÂÂÂLªIdentifierÍ´Í¶¢idW§LiteralÍ¸ÍÀ¦g_grav¨'g_grav'¤initV¨PropertyÍÏÍÚÂÂÂLªIdentifierÍÏÍÕ¦symbolW§LiteralÍ×ÍÚ¡g£'g'¤initV¨PropertyÍéÍöÂÂÂLªIdentifierÍéÍí¤nameW§LiteralÍïÍö¯é‡åŠ›åŠ é€Ÿåº¦±'é‡åŠ›åŠ é€Ÿåº¦'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ
+¥valueW§LiteralÍÍ§9.80665©'9.80665'¤initV¨PropertyÍ$Í0ÂÂÂLªIdentifierÍ$Í(¤unitW§LiteralÍ*Í0¥m/sÂ²§'m/sÂ²'¤initV¨PropertyÍ?ÍRÂÂÂLªIdentifierÍ?ÍG¨categoryW§LiteralÍIÍR§physics©'physics'¤initV¨PropertyÍaÍwÂÂÂLªIdentifierÍaÍl«descriptionW§LiteralÍnÍwµæ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦·'æ ‡å‡†é‡åŠ›åŠ é€Ÿåº¦'¤initÂS³ExpressionStatementÍŽÍT®CallExpressionÍŽÍŽQ°MemberExpressionÍŽÍ¥LªIdentifierÍŽÍ™«ConstantLibLªIdentifierÍšÍ¥«addConstantÂÂ‘U°ObjectExpressionÍ¦Í—V¨PropertyÍµÍÃÂÂÂLªIdentifierÍµÍ·¢idW§LiteralÍ¹ÍÃ¨G_newtonª'G_newton'¤initV¨PropertyÍÒÍÝÂÂÂLªIdentifierÍÒÍØ¦symbolW§LiteralÍÚÍÝ¡G£'G'¤initV¨PropertyÍìÍúÂÂÂLªIdentifierÍìÍð¤nameW§LiteralÍòÍú²ä¸‡æœ‰å¼•åŠ›å¸¸æ•°´'ä¸‡æœ‰å¼•åŠ›å¸¸æ•°'¤initV¨PropertyÍ	ÍÂÂÂLªIdentifierÍ	Í¥valueW§LiteralÍÍ«6.67430e-11­'6.67430e-11'¤initV¨PropertyÍ,Í<ÂÂÂLªIdentifierÍ,Í0¤unitW§LiteralÍ2Í<«NÂ·mÂ²/kgÂ²­'NÂ·mÂ²/kgÂ²'¤initV¨PropertyÍKÍ^ÂÂÂLªIdentifierÍKÍS¨categoryW§LiteralÍUÍ^§physics©'physics'¤initV¨PropertyÍmÍ‚ÂÂÂLªIdentifierÍmÍx«descriptionW§LiteralÍzÍ‚²ç‰›é¡¿å¼•åŠ›å¸¸æ•°´'ç‰›é¡¿å¼•åŠ›å¸¸æ•°'¤initÂS³ExpressionStatementÍ™Í™T®CallExpressionÍ™Í˜Q°MemberExpressionÍ™Í°LªIdentifierÍ™Í¤«ConstantLibLªIdentifierÍ¥Í°«addConstantÂÂ‘U°ObjectExpressionÍ±Í——V¨PropertyÍÀÍÍÂÂÂLªIdentifierÍÀÍÂ¢idW§LiteralÍÄÍÍ§k_boltz©'k_boltz'¤initV¨PropertyÍÜÍéÂÂÂLªIdentifierÍÜÍâ¦symbolW§LiteralÍäÍé£k_B¥'k_B'¤initV¨PropertyÍøÍÂÂÂLªIdentifierÍøÍü¤nameW§LiteralÍþÍ²çŽ»å°”å…¹æ›¼å¸¸æ•°´'çŽ»å°”å…¹æ›¼å¸¸æ•°'¤initV¨PropertyÍÍ*ÂÂÂLªIdentifierÍÍ¥valueW§LiteralÍÍ*¬1.380649e-23®'1.380649e-23'¤initV¨PropertyÍ9ÍDÂÂÂLªIdentifierÍ9Í=¤unitW§LiteralÍ?ÍD£J/K¥'J/K'¤initV¨PropertyÍSÍfÂÂÂLªIdentifierÍSÍ[¨categoryW§LiteralÍ]Íf§physics©'physics'¤initV¨PropertyÍuÍŒÂÂÂLªIdentifierÍuÍ€«descriptionW§LiteralÍ‚ÍŒ¸ç»Ÿè®¡åŠ›å­¦åŸºæœ¬å¸¸æ•°º'ç»Ÿè®¡åŠ›å­¦åŸºæœ¬å¸¸æ•°'¤initÂS³ExpressionStatementÍ£ÍžT®CallExpressionÍ£ÍQ°MemberExpressionÍ£ÍºLªIdentifierÍ£Í®«ConstantLibLªIdentifierÍ¯Íº«addConstantÂÂ‘U°ObjectExpressionÍ»Íœ—V¨PropertyÍÊÍÔÂÂÂLªIdentifierÍÊÍÌ¢idW§LiteralÍÎÍÔ¤eps0¦'eps0'¤initV¨PropertyÍãÍïÂÂÂLªIdentifierÍãÍé¦symbolW§LiteralÍëÍï¥Îµâ‚€§'Îµâ‚€'¤initV¨PropertyÍþÍÂÂÂLªIdentifierÍþÍ¤nameW§LiteralÍÍ²çœŸç©ºä»‹ç”µå¸¸æ•°´'çœŸç©ºä»‹ç”µå¸¸æ•°'¤initV¨PropertyÍÍ4ÂÂÂLªIdentifierÍÍ ¥valueW§LiteralÍ"Í4°8.8541878128e-12²'8.8541878128e-12'¤initV¨PropertyÍCÍNÂÂÂLªIdentifierÍCÍG¤unitW§LiteralÍIÍN£F/m¥'F/m'¤initV¨PropertyÍ]ÍpÂÂÂLªIdentifierÍ]Íe¨categoryW§LiteralÍgÍp§physics©'physics'¤initV¨PropertyÍÍ‘ÂÂÂLªIdentifierÍÍŠ«descriptionW§LiteralÍŒÍ‘©ç”µå®¹çŽ‡«'ç”µå®¹çŽ‡'¤initÂS³ExpressionStatementÍ¨Í¡T®CallExpressionÍ¨Í Q°MemberExpressionÍ¨Í¿LªIdentifierÍ¨Í³«ConstantLibLªIdentifierÍ´Í¿«addConstantÂÂ‘U°ObjectExpressionÍÀÍŸ—V¨PropertyÍÏÍØÂÂÂLªIdentifierÍÏÍÑ¢idW§LiteralÍÓÍØ£mu0¥'mu0'¤initV¨PropertyÍçÍóÂÂÂLªIdentifierÍçÍí¦symbolW§LiteralÍïÍó¥Î¼â‚€§'Î¼â‚€'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ¤nameW§LiteralÍÍ¯çœŸç©ºç£å¯¼çŽ‡±'çœŸç©ºç£å¯¼çŽ‡'¤initV¨PropertyÍÍ7ÂÂÂLªIdentifierÍÍ#¥valueW§LiteralÍ%Í7°1.25663706212e-6²'1.25663706212e-6'¤initV¨PropertyÍFÍQÂÂÂLªIdentifierÍFÍJ¤unitW§LiteralÍLÍQ£H/m¥'H/m'¤initV¨PropertyÍ`ÍsÂÂÂLªIdentifierÍ`Íh¨categoryW§LiteralÍjÍs§physics©'physics'¤initV¨PropertyÍ‚Í”ÂÂÂLªIdentifierÍ‚Í«descriptionW§LiteralÍÍ”©ç£å¯¼çŽ‡«'ç£å¯¼çŽ‡'¤initÂS³ExpressionStatementÍ«ÍªT®CallExpressionÍ«Í©Q°MemberExpressionÍ«ÍÂLªIdentifierÍ«Í¶«ConstantLibLªIdentifierÍ·ÍÂ«addConstantÂÂ‘U°ObjectExpressionÍÃÍ¨—V¨PropertyÍÒÍÚÂÂÂLªIdentifierÍÒÍÔ¢idW§LiteralÍÖÍÚ¢NA¤'NA'¤initV¨PropertyÍéÍõÂÂÂLªIdentifierÍéÍï¦symbolW§LiteralÍñÍõ¤Nâ‚¦'Nâ‚'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ¤nameW§LiteralÍ
+Í²é˜¿ä¼åŠ å¾·ç½—æ•°´'é˜¿ä¼åŠ å¾·ç½—æ•°'¤initV¨PropertyÍ!Í8ÂÂÂLªIdentifierÍ!Í&¥valueW§LiteralÍ(Í8®6.02214076e+23°'6.02214076e+23'¤initV¨PropertyÍGÍTÂÂÂLªIdentifierÍGÍK¤unitW§LiteralÍMÍT¨molâ»Â¹ª'molâ»Â¹'¤initV¨PropertyÍcÍvÂÂÂLªIdentifierÍcÍk¨categoryW§LiteralÍmÍv§physics©'physics'¤initV¨PropertyÍ…ÍÂÂÂLªIdentifierÍ…Í«descriptionW§LiteralÍ’Í¯1 mol ç²’å­æ•°±'1 mol ç²’å­æ•°'¤initÂS³ExpressionStatementÍ´Í±T®CallExpressionÍ´Í°Q°MemberExpressionÍ´ÍËLªIdentifierÍ´Í¿«ConstantLibLªIdentifierÍÀÍË«addConstantÂÂ‘U°ObjectExpressionÍÌÍ¯—V¨PropertyÍÛÍæÂÂÂLªIdentifierÍÛÍÝ¢idW§LiteralÍßÍæ¥R_gas§'R_gas'¤initV¨PropertyÍõÍ ÂÂÂLªIdentifierÍõÍû¦symbolW§LiteralÍýÍ ¡R£'R'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ¤nameW§LiteralÍÍ¬æ°”ä½“å¸¸æ•°®'æ°”ä½“å¸¸æ•°'¤initV¨PropertyÍ*Í>ÂÂÂLªIdentifierÍ*Í/¥valueW§LiteralÍ1Í>«8.314462618­'8.314462618'¤initV¨PropertyÍMÍ^ÂÂÂLªIdentifierÍMÍQ¤unitW§LiteralÍSÍ^ªJ/(molÂ·K)¬'J/(molÂ·K)'¤initV¨PropertyÍmÍ€ÂÂÂLªIdentifierÍmÍu¨categoryW§LiteralÍwÍ€§physics©'physics'¤initV¨PropertyÍÍ¤ÂÂÂLªIdentifierÍÍš«descriptionW§LiteralÍœÍ¤²ç†æƒ³æ°”ä½“å¸¸æ•°´'ç†æƒ³æ°”ä½“å¸¸æ•°'¤initÂS³ExpressionStatementÍ»ÍÀT®CallExpressionÍ»Í¿Q°MemberExpressionÍ»ÍÒLªIdentifierÍ»ÍÆ«ConstantLibLªIdentifierÍÇÍÒ«addConstantÂÂ‘U°ObjectExpressionÍÓÍ¾—V¨PropertyÍâÍðÂÂÂLªIdentifierÍâÍä¢idW§LiteralÍæÍð¨sigma_sbª'sigma_sb'¤initV¨PropertyÍÿÍ
+ÂÂÂLªIdentifierÍÿÍ¦symbolW§LiteralÍÍ
+¢Ïƒ¤'Ïƒ'¤initV¨PropertyÍÍ)ÂÂÂLªIdentifierÍÍ¤nameW§LiteralÍÍ)¶æ–¯ç‰¹è—©-çŽ»å°”å…¹æ›¼¸'æ–¯ç‰¹è—©-çŽ»å°”å…¹æ›¼'¤initV¨PropertyÍ8ÍOÂÂÂLªIdentifierÍ8Í=¥valueW§LiteralÍ?ÍO®5.670374419e-8°'5.670374419e-8'¤initV¨PropertyÍ^ÍoÂÂÂLªIdentifierÍ^Íb¤unitW§LiteralÍdÍo­W/(mÂ²Â·Kâ´)¯'W/(mÂ²Â·Kâ´)'¤initV¨PropertyÍ~Í‘ÂÂÂLªIdentifierÍ~Í†¨categoryW§LiteralÍˆÍ‘§physics©'physics'¤initV¨PropertyÍ Í³ÂÂÂLªIdentifierÍ Í««descriptionW§LiteralÍ­Í³¬è¾å°„å¸¸æ•°®'è¾å°„å¸¸æ•°'¤initÂS³ExpressionStatementÍÊÍËT®CallExpressionÍÊÍÊQ°MemberExpressionÍÊÍáLªIdentifierÍÊÍÕ«ConstantLibLªIdentifierÍÖÍá«addConstantÂÂ‘U°ObjectExpressionÍâÍÉ—V¨PropertyÍñÍÂÂÂLªIdentifierÍñÍó¢idW§LiteralÍõÍªm_electron¬'m_electron'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ¦symbolW§LiteralÍÍ¤mâ‚‘¦'mâ‚‘'¤initV¨PropertyÍ+Í7ÂÂÂLªIdentifierÍ+Í/¤nameW§LiteralÍ1Í7¬ç”µå­è´¨é‡®'ç”µå­è´¨é‡'¤initV¨PropertyÍFÍ_ÂÂÂLªIdentifierÍFÍK¥valueW§LiteralÍMÍ_°9.1093837015e-31²'9.1093837015e-31'¤initV¨PropertyÍnÍxÂÂÂLªIdentifierÍnÍr¤unitW§LiteralÍtÍx¢kg¤'kg'¤initV¨PropertyÍ‡ÍšÂÂÂLªIdentifierÍ‡Í¨categoryW§LiteralÍ‘Íš§physics©'physics'¤initV¨PropertyÍ©Í¾ÂÂÂLªIdentifierÍ©Í´«descriptionW§LiteralÍ¶Í¾²ç”µå­é™æ­¢è´¨é‡´'ç”µå­é™æ­¢è´¨é‡'¤initÂS³ExpressionStatementÍÕÍÕT®CallExpressionÍÕÍÔQ°MemberExpressionÍÕÍìLªIdentifierÍÕÍà«ConstantLibLªIdentifierÍáÍì«addConstantÂÂ‘U°ObjectExpressionÍíÍÓ—V¨PropertyÍüÍ
+ÂÂÂLªIdentifierÍüÍþ¢idW§LiteralÍ Í
+¨m_protonª'm_proton'¤initV¨PropertyÍÍ%ÂÂÂLªIdentifierÍÍ¦symbolW§LiteralÍ!Í%¤mâ‚š¦'mâ‚š'¤initV¨PropertyÍ4Í@ÂÂÂLªIdentifierÍ4Í8¤nameW§LiteralÍ:Í@¬è´¨å­è´¨é‡®'è´¨å­è´¨é‡'¤initV¨PropertyÍOÍiÂÂÂLªIdentifierÍOÍT¥valueW§LiteralÍVÍi±1.67262192369e-27³'1.67262192369e-27'¤initV¨PropertyÍxÍ‚ÂÂÂLªIdentifierÍxÍ|¤unitW§LiteralÍ~Í‚¢kg¤'kg'¤initV¨PropertyÍ‘Í¤ÂÂÂLªIdentifierÍ‘Í™¨categoryW§LiteralÍ›Í¤§physics©'physics'¤initV¨PropertyÍ³ÍÈÂÂÂLªIdentifierÍ³Í¾«descriptionW§LiteralÍÀÍÈ²è´¨å­é™æ­¢è´¨é‡´'è´¨å­é™æ­¢è´¨é‡'¤initÂS³ExpressionStatementÍßÍàT®CallExpressionÍßÍßQ°MemberExpressionÍßÍöLªIdentifierÍßÍê«ConstantLibLªIdentifierÍëÍö«addConstantÂÂ‘U°ObjectExpressionÍ÷ÍÞ—V¨PropertyÍÍÂÂÂLªIdentifierÍÍ¢idW§LiteralÍ
+Í©m_neutron«'m_neutron'¤initV¨PropertyÍ$Í0ÂÂÂLªIdentifierÍ$Í*¦symbolW§LiteralÍ,Í0¤mâ‚™¦'mâ‚™'¤initV¨PropertyÍ?ÍKÂÂÂLªIdentifierÍ?ÍC¤nameW§LiteralÍEÍK¬ä¸­å­è´¨é‡®'ä¸­å­è´¨é‡'¤initV¨PropertyÍZÍtÂÂÂLªIdentifierÍZÍ_¥valueW§LiteralÍaÍt±1.67492749804e-27³'1.67492749804e-27'¤initV¨PropertyÍƒÍÂÂÂLªIdentifierÍƒÍ‡¤unitW§LiteralÍ‰Í¢kg¤'kg'¤initV¨PropertyÍœÍ¯ÂÂÂLªIdentifierÍœÍ¤¨categoryW§LiteralÍ¦Í¯§physics©'physics'¤initV¨PropertyÍ¾ÍÓÂÂÂLªIdentifierÍ¾ÍÉ«descriptionW§LiteralÍËÍÓ²ä¸­å­é™æ­¢è´¨é‡´'ä¸­å­é™æ­¢è´¨é‡'¤initÂS³ExpressionStatementÍêÍêT®CallExpressionÍêÍéQ°MemberExpressionÍêÍLªIdentifierÍêÍõ«ConstantLibLªIdentifierÍöÍ«addConstantÂÂ‘U°ObjectExpressionÍÍè—V¨PropertyÍÍÂÂÂLªIdentifierÍÍ¢idW§LiteralÍÍ¦r_bohr¨'r_bohr'¤initV¨PropertyÍ,Í8ÂÂÂLªIdentifierÍ,Í2¦symbolW§LiteralÍ4Í8¤aâ‚€¦'aâ‚€'¤initV¨PropertyÍGÍSÂÂÂLªIdentifierÍGÍK¤nameW§LiteralÍMÍS¬çŽ»å°”åŠå¾„®'çŽ»å°”åŠå¾„'¤initV¨PropertyÍbÍ|ÂÂÂLªIdentifierÍbÍg¥valueW§LiteralÍiÍ|±5.29177210903e-11³'5.29177210903e-11'¤initV¨PropertyÍ‹Í”ÂÂÂLªIdentifierÍ‹Í¤unitW§LiteralÍ‘Í”¡m£'m'¤initV¨PropertyÍ£Í¶ÂÂÂLªIdentifierÍ£Í«¨categoryW§LiteralÍ­Í¶§physics©'physics'¤initV¨PropertyÍÅÍÝÂÂÂLªIdentifierÍÅÍÐ«descriptionW§LiteralÍÒÍÝ»æ°¢åŽŸå­åŸºæ€è½¨é“åŠå¾„½'æ°¢åŽŸå­åŸºæ€è½¨é“åŠå¾„'¤initÂS³ExpressionStatementÍ>Í2T®CallExpressionÍ>Í1Q°MemberExpressionÍ>ÍULªIdentifierÍ>ÍI«ConstantLibLªIdentifierÍJÍU«addConstantÂÂ‘U°ObjectExpressionÍVÍ0—V¨PropertyÍeÍnÂÂÂLªIdentifierÍeÍg¢idW§LiteralÍiÍn£atm¥'atm'¤initV¨PropertyÍ}ÍŠÂÂÂLªIdentifierÍ}Íƒ¦symbolW§LiteralÍ…ÍŠ£atm¥'atm'¤initV¨PropertyÍ™Í¦ÂÂÂLªIdentifierÍ™Í¤nameW§LiteralÍŸÍ¦¯æ ‡å‡†å¤§æ°”åŽ‹±'æ ‡å‡†å¤§æ°”åŽ‹'¤initV¨PropertyÍµÍÄÂÂÂLªIdentifierÍµÍº¥valueW§LiteralÍ¼ÍÄ¦101325¨'101325'¤initV¨PropertyÍÓÍÝÂÂÂLªIdentifierÍÓÍ×¤unitW§LiteralÍÙÍÝ¢Pa¤'Pa'¤initV¨PropertyÍìÍÂÂÂLªIdentifierÍìÍô¨categoryW§LiteralÍöÍ©chemistry«'chemistry'¤initV¨PropertyÍÍ%ÂÂÂLªIdentifierÍÍ«descriptionW§LiteralÍÍ%°1æ ‡å‡†å¤§æ°”åŽ‹²'1æ ‡å‡†å¤§æ°”åŽ‹'¤initÂS³ExpressionStatementÍ<Í0T®CallExpressionÍ<Í/Q°MemberExpressionÍ<ÍSLªIdentifierÍ<ÍG«ConstantLibLªIdentifierÍHÍS«addConstantÂÂ‘U°ObjectExpressionÍTÍ.—V¨PropertyÍcÍnÂÂÂLªIdentifierÍcÍe¢idW§LiteralÍgÍn¥stp_T§'stp_T'¤initV¨PropertyÍ}Í‰ÂÂÂLªIdentifierÍ}Íƒ¦symbolW§LiteralÍ…Í‰¤Tâ‚€¦'Tâ‚€'¤initV¨PropertyÍ˜Í¤ÂÂÂLªIdentifierÍ˜Íœ¤nameW§LiteralÍžÍ¤¬æ ‡å‡†æ¸©åº¦®'æ ‡å‡†æ¸©åº¦'¤initV¨PropertyÍ³ÍÂÂÂÂLªIdentifierÍ³Í¸¥valueW§LiteralÍºÍÂ¦273.15¨'273.15'¤initV¨PropertyÍÑÍÚÂÂÂLªIdentifierÍÑÍÕ¤unitW§LiteralÍ×ÍÚ¡K£'K'¤initV¨PropertyÍéÍþÂÂÂLªIdentifierÍéÍñ¨categoryW§LiteralÍóÍþ©chemistry«'chemistry'¤initV¨PropertyÍÍ#ÂÂÂLªIdentifierÍÍ«descriptionW§LiteralÍÍ#ª0Â°C è½¬ K¬'0Â°C è½¬ K'¤initÂS³ExpressionStatementÍ:Í=T®CallExpressionÍ:Í<Q°MemberExpressionÍ:ÍQLªIdentifierÍ:ÍE«ConstantLibLªIdentifierÍFÍQ«addConstantÂÂ‘U°ObjectExpressionÍRÍ;—V¨PropertyÍaÍoÂÂÂLªIdentifierÍaÍc¢idW§LiteralÍeÍo¨water_mwª'water_mw'¤initV¨PropertyÍ~ÍŽÂÂÂLªIdentifierÍ~Í„¦symbolW§LiteralÍ†ÍŽ¨M(Hâ‚‚O)ª'M(Hâ‚‚O)'¤initV¨PropertyÍÍ«ÂÂÂLªIdentifierÍÍ¡¤nameW§LiteralÍ£Í«²æ°´çš„æ‘©å°”è´¨é‡´'æ°´çš„æ‘©å°”è´¨é‡'¤initV¨PropertyÍºÍËÂÂÂLªIdentifierÍºÍ¿¥valueW§LiteralÍÁÍË¨18.01528ª'18.01528'¤initV¨PropertyÍÚÍçÂÂÂLªIdentifierÍÚÍÞ¤unitW§LiteralÍàÍç¥g/mol§'g/mol'¤initV¨PropertyÍöÍÂÂÂLªIdentifierÍöÍþ¨categoryW§LiteralÍ Í©chemistry«'chemistry'¤initV¨PropertyÍÍ0ÂÂÂLªIdentifierÍÍ%«descriptionW§LiteralÍ'Í0¯Hâ‚‚O åˆ†å­é‡±'Hâ‚‚O åˆ†å­é‡'¤initÂS³ExpressionStatementÍGÍFT®CallExpressionÍGÍEQ°MemberExpressionÍGÍ^LªIdentifierÍGÍR«ConstantLibLªIdentifierÍSÍ^«addConstantÂÂ‘U°ObjectExpressionÍ_ÍD—V¨PropertyÍnÍ{ÂÂÂLªIdentifierÍnÍp¢idW§LiteralÍrÍ{§c_water©'c_water'¤initV¨PropertyÍŠÍ›ÂÂÂLªIdentifierÍŠÍ¦symbolW§LiteralÍ’Í›«câ‚š(Hâ‚‚O)­'câ‚š(Hâ‚‚O)'¤initV¨PropertyÍªÍ¶ÂÂÂLªIdentifierÍªÍ®¤nameW§LiteralÍ°Í¶¬æ°´æ¯”çƒ­å®¹®'æ°´æ¯”çƒ­å®¹'¤initV¨PropertyÍÅÍÒÂÂÂLªIdentifierÍÅÍÊ¥valueW§LiteralÍÌÍÒ¤4186¦'4186'¤initV¨PropertyÍáÍñÂÂÂLªIdentifierÍáÍå¤unitW§LiteralÍçÍñ©J/(kgÂ·K)«'J/(kgÂ·K)'¤initV¨PropertyÍ ÍÂÂÂLªIdentifierÍ Í¨categoryW§LiteralÍ
+Í©chemistry«'chemistry'¤initV¨PropertyÍ$Í9ÂÂÂLªIdentifierÍ$Í/«descriptionW§LiteralÍ1Í9²æ¶²æ€æ°´æ¯”çƒ­å®¹´'æ¶²æ€æ°´æ¯”çƒ­å®¹'¤initÂS³ExpressionStatementÍPÍST®CallExpressionÍPÍRQ°MemberExpressionÍPÍgLªIdentifierÍPÍ[«ConstantLibLªIdentifierÍ\Íg«addConstantÂÂ‘U°ObjectExpressionÍhÍQ—V¨PropertyÍwÍ„ÂÂÂLªIdentifierÍwÍy¢idW§LiteralÍ{Í„§faraday©'faraday'¤initV¨PropertyÍ“ÍžÂÂÂLªIdentifierÍ“Í™¦symbolW§LiteralÍ›Íž¡F£'F'¤initV¨PropertyÍ­ÍºÂÂÂLªIdentifierÍ­Í±¤nameW§LiteralÍ³Íº¯æ³•æ‹‰ç¬¬å¸¸æ•°±'æ³•æ‹‰ç¬¬å¸¸æ•°'¤initV¨PropertyÍÉÍÝÂÂÂLªIdentifierÍÉÍÎ¥valueW§LiteralÍÐÍÝ«96485.33212­'96485.33212'¤initV¨PropertyÍìÍùÂÂÂLªIdentifierÍìÍð¤unitW§LiteralÍòÍù¥C/mol§'C/mol'¤initV¨PropertyÍÍÂÂÂLªIdentifierÍÍ¨categoryW§LiteralÍÍ©chemistry«'chemistry'¤initV¨PropertyÍ,ÍFÂÂÂLªIdentifierÍ,Í7«descriptionW§LiteralÍ9ÍF·1mol ç”µå­çš„ç”µè·é‡¹'1mol ç”µå­çš„ç”µè·é‡'¤initÂS³ExpressionStatementÍ]ÍWT®CallExpressionÍ]ÍVQ°MemberExpressionÍ]ÍtLªIdentifierÍ]Íh«ConstantLibLªIdentifierÍiÍt«addConstantÂÂ‘U°ObjectExpressionÍuÍU—V¨PropertyÍ„ÍÂÂÂLªIdentifierÍ„Í†¢idW§LiteralÍˆÍ£ryd¥'ryd'¤initV¨PropertyÍœÍ¨ÂÂÂLªIdentifierÍœÍ¢¦symbolW§LiteralÍ¤Í¨¤Râˆž¦'Râˆž'¤initV¨PropertyÍ·ÍÄÂÂÂLªIdentifierÍ·Í»¤nameW§LiteralÍ½ÍÄ¯é‡Œå¾·å ¡å¸¸æ•°±'é‡Œå¾·å ¡å¸¸æ•°'¤initV¨PropertyÍÓÍèÂÂÂLªIdentifierÍÓÍØ¥valueW§LiteralÍÚÍè¬10973731.568®'10973731.568'¤initV¨PropertyÍ÷ÍÂÂÂLªIdentifierÍ÷Íû¤unitW§LiteralÍýÍ¦mâ»Â¹¨'mâ»Â¹'¤initV¨PropertyÍÍ&ÂÂÂLªIdentifierÍÍ¨categoryW§LiteralÍÍ&©chemistry«'chemistry'¤initV¨PropertyÍ5ÍJÂÂÂLªIdentifierÍ5Í@«descriptionW§LiteralÍBÍJ²åŽŸå­å…‰è°±å¸¸æ•°´'åŽŸå­å…‰è°±å¸¸æ•°'¤initÂS³ExpressionStatementÍaÍ€ÔrX–¤type¥start£end¨operator¤left¥right´AssignmentExpressionÍaÍ¡=Q°MemberExpressionÍaÍxLªIdentifierÍaÍl«ConstantLibLªIdentifierÍmÍx«initializedÂÂW§LiteralÍ{ÍÃ¤trueS³ExpressionStatementÍŠÍäT®CallExpressionÍŠÍãQ°MemberExpressionÍŠÍžT®CallExpressionÍŠÍ™LªIdentifierÍŠÍ—­getMathLoggerÂLªIdentifierÍšÍž¤infoÂÂ‘ÔrY–¤type¥start£end¤left¨operator¥right°BinaryExpressionÍŸÍâY°BinaryExpressionÍŸÍÙW§LiteralÍŸÍ¼Ù3[ConstantLib] å¸¸æ•°åº“åˆå§‹åŒ–å®Œæˆï¼Œå…±åŠ è½½ Ù5'[ConstantLib] å¸¸æ•°åº“åˆå§‹åŒ–å®Œæˆï¼Œå…±åŠ è½½ '¡+Q°MemberExpressionÍ¿ÍÙQ°MemberExpressionÍ¿ÍÔLªIdentifierÍ¿ÍÊ«ConstantLibLªIdentifierÍËÍÔ©constantsÂÂLªIdentifierÍÕÍÙ¤sizeÂÂ¡+W§LiteralÍÜÍâª ä¸ªå¸¸æ•°¬' ä¸ªå¸¸æ•°'ÂN°MethodDefinitionÍ Í!äÃÂLªIdentifierÍ Í %«addConstant¦methodO²FunctionExpressionÍ %Í!äÀÂÂÂ‘LªIdentifierÍ &Í +¥entryM®BlockStatementÍ -Í!ä”P«IfStatementÍ KÍ ÖT®CallExpressionÍ OÍ vQ°MemberExpressionÍ OÍ hQ°MemberExpressionÍ OÍ dLªIdentifierÍ OÍ Z«ConstantLibLªIdentifierÍ [Í d©constantsÂÂLªIdentifierÍ eÍ h£hasÂÂ‘Q°MemberExpressionÍ iÍ uLªIdentifierÍ iÍ n¥entryLªIdentifierÍ oÍ u¦symbolÂÂÂM®BlockStatementÍ xÍ Ö‘S³ExpressionStatementÍ ‡Í ËT®CallExpressionÍ ‡Í ÊQ°MemberExpressionÍ ‡Í ›T®CallExpressionÍ ‡Í –LªIdentifierÍ ‡Í ”­getMathLoggerÂLªIdentifierÍ —Í ›¤warnÂÂ‘ÔrZ•¤type¥start£end«expressions¦quasis¯TemplateLiteralÍ œÍ É‘Q°MemberExpressionÍ ±Í ½LªIdentifierÍ ±Í ¶¥entryLªIdentifierÍ ·Í ½¦symbolÂÂ’Ôr[•¤type¥start£end¥value¤tail¯TemplateElementÍ Í ¯Ôr\’£raw¦cooked¶[ConstantLib] ç¬¦å· "¶[ConstantLib] ç¬¦å· "Â[¯TemplateElementÍ ¾Í È\º" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–º" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–ÃÂÀP«IfStatementÍ ôÍ!sT®CallExpressionÍ øÍ!Q°MemberExpressionÍ øÍ!Q°MemberExpressionÍ øÍ!	LªIdentifierÍ øÍ!«ConstantLibLªIdentifierÍ!Í!	¥idMapÂÂLªIdentifierÍ!
+Í!£hasÂÂ‘Q°MemberExpressionÍ!Í!LªIdentifierÍ!Í!¥entryLªIdentifierÍ!Í!¢idÂÂÂM®BlockStatementÍ!Í!s‘S³ExpressionStatementÍ!(Í!hT®CallExpressionÍ!(Í!gQ°MemberExpressionÍ!(Í!<T®CallExpressionÍ!(Í!7LªIdentifierÍ!(Í!5­getMathLoggerÂLªIdentifierÍ!8Í!<¤warnÂÂ‘Z¯TemplateLiteralÍ!=Í!f‘Q°MemberExpressionÍ!RÍ!ZLªIdentifierÍ!RÍ!W¥entryLªIdentifierÍ!XÍ!Z¢idÂÂ’[¯TemplateElementÍ!>Í!P\²[ConstantLib] ID "²[ConstantLib] ID "Â[¯TemplateElementÍ![Í!e\º" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–º" å·²å­˜åœ¨ï¼Œå°†è¢«è¦†ç›–ÃÂÀS³ExpressionStatementÍ!}Í!¬T®CallExpressionÍ!}Í!«Q°MemberExpressionÍ!}Í!–Q°MemberExpressionÍ!}Í!’LªIdentifierÍ!}Í!ˆ«ConstantLibLªIdentifierÍ!‰Í!’©constantsÂÂLªIdentifierÍ!“Í!–£setÂÂ’Q°MemberExpressionÍ!—Í!£LªIdentifierÍ!—Í!œ¥entryLªIdentifierÍ!Í!£¦symbolÂÂLªIdentifierÍ!¥Í!ª¥entryÂS³ExpressionStatementÍ!¶Í!ÝT®CallExpressionÍ!¶Í!ÜQ°MemberExpressionÍ!¶Í!ËQ°MemberExpressionÍ!¶Í!ÇLªIdentifierÍ!¶Í!Á«ConstantLibLªIdentifierÍ!ÂÍ!Ç¥idMapÂÂLªIdentifierÍ!ÈÍ!Ë£setÂÂ’Q°MemberExpressionÍ!ÌÍ!ÔLªIdentifierÍ!ÌÍ!Ñ¥entryLªIdentifierÍ!ÒÍ!Ô¢idÂÂLªIdentifierÍ!ÖÍ!Û¥entryÂN°MethodDefinitionÍ"Í#"ÃÂLªIdentifierÍ"Í"!®removeConstant¦methodO²FunctionExpressionÍ"!Í#"ÀÂÂÂ‘LªIdentifierÍ""Í"(¦symbolM®BlockStatementÍ"*Í#"“Ôr]•¤type¥start£end¬declarations¤kind³VariableDeclarationÍ"5Í"e‘Ôr^•¤type¥start£end¢id¤init²VariableDeclaratorÍ";Í"dLªIdentifierÍ";Í"@¥entryT®CallExpressionÍ"CÍ"dQ°MemberExpressionÍ"CÍ"\Q°MemberExpressionÍ"CÍ"XLªIdentifierÍ"CÍ"N«ConstantLibLªIdentifierÍ"OÍ"X©constantsÂÂLªIdentifierÍ"YÍ"\£getÂÂ‘LªIdentifierÍ"]Í"c¦symbolÂ¥constP«IfStatementÍ"oÍ#LªIdentifierÍ"sÍ"x¥entryM®BlockStatementÍ"zÍ#“S³ExpressionStatementÍ"‰Í"®T®CallExpressionÍ"‰Í"­Q°MemberExpressionÍ"‰Í"¥Q°MemberExpressionÍ"‰Í"žLªIdentifierÍ"‰Í"”«ConstantLibLªIdentifierÍ"•Í"ž©constantsÂÂLªIdentifierÍ"ŸÍ"¥¦deleteÂÂ‘LªIdentifierÍ"¦Í"¬¦symbolÂS³ExpressionStatementÍ"¼Í"ßT®CallExpressionÍ"¼Í"ÞQ°MemberExpressionÍ"¼Í"ÔQ°MemberExpressionÍ"¼Í"ÍLªIdentifierÍ"¼Í"Ç«ConstantLibLªIdentifierÍ"ÈÍ"Í¥idMapÂÂLªIdentifierÍ"ÎÍ"Ô¦deleteÂÂ‘Q°MemberExpressionÍ"ÕÍ"ÝLªIdentifierÍ"ÕÍ"Ú¥entryLªIdentifierÍ"ÛÍ"Ý¢idÂÂÂR¯ReturnStatementÍ"íÍ"ùW§LiteralÍ"ôÍ"øÃ¤trueÀR¯ReturnStatementÍ#Í#W§LiteralÍ#Í#Â¥falseN°MethodDefinitionÍ#MÍ#£ÃÂLªIdentifierÍ#TÍ#_«getConstant¦methodO²FunctionExpressionÍ#_Í#£ÀÂÂÂ‘LªIdentifierÍ#`Í#f¦symbolM®BlockStatementÍ#hÍ#£‘R¯ReturnStatementÍ#sÍ#œT®CallExpressionÍ#zÍ#›Q°MemberExpressionÍ#zÍ#“Q°MemberExpressionÍ#zÍ#LªIdentifierÍ#zÍ#…«ConstantLibLªIdentifierÍ#†Í#©constantsÂÂLªIdentifierÍ#Í#“£getÂÂ‘LªIdentifierÍ#”Í#š¦symbolÂN°MethodDefinitionÍ#ÐÍ$ÃÂLªIdentifierÍ#×Í#æ¯getConstantById¦methodO²FunctionExpressionÍ#æÍ$ÀÂÂÂ‘LªIdentifierÍ#çÍ#é¢idM®BlockStatementÍ#ëÍ$‘R¯ReturnStatementÍ#öÍ$T®CallExpressionÍ#ýÍ$Q°MemberExpressionÍ#ýÍ$Q°MemberExpressionÍ#ýÍ$LªIdentifierÍ#ýÍ$«ConstantLibLªIdentifierÍ$	Í$¥idMapÂÂLªIdentifierÍ$Í$£getÂÂ‘LªIdentifierÍ$Í$¢idÂN°MethodDefinitionÍ$IÍ$¢ÃÂLªIdentifierÍ$PÍ$]­getAllSymbols¦methodO²FunctionExpressionÍ$]Í$¢ÀÂÂÂM®BlockStatementÍ$`Í$¢‘R¯ReturnStatementÍ$kÍ$›T®CallExpressionÍ$rÍ$šQ°MemberExpressionÍ$rÍ$|LªIdentifierÍ$rÍ$w¥ArrayLªIdentifierÍ$xÍ$|¤fromÂÂ‘T®CallExpressionÍ$}Í$™Q°MemberExpressionÍ$}Í$—Q°MemberExpressionÍ$}Í$’LªIdentifierÍ$}Í$ˆ«ConstantLibLªIdentifierÍ$‰Í$’©constantsÂÂLªIdentifierÍ$“Í$—¤keysÂÂÂÂN°MethodDefinitionÍ$ËÍ%(ÃÂLªIdentifierÍ$ÒÍ$á¯getAllConstants¦methodO²FunctionExpressionÍ$áÍ%(ÀÂÂÂM®BlockStatementÍ$äÍ%(‘R¯ReturnStatementÍ$ïÍ%!T®CallExpressionÍ$öÍ% Q°MemberExpressionÍ$öÍ% LªIdentifierÍ$öÍ$û¥ArrayLªIdentifierÍ$üÍ% ¤fromÂÂ‘T®CallExpressionÍ%Í%Q°MemberExpressionÍ%Í%Q°MemberExpressionÍ%Í%LªIdentifierÍ%Í%«ConstantLibLªIdentifierÍ%Í%©constantsÂÂLªIdentifierÍ%Í%¦valuesÂÂÂÂN°MethodDefinitionÍ%RÍ%ÞÃÂLªIdentifierÍ%YÍ%o¶getConstantsByCategory¦methodO²FunctionExpressionÍ%oÍ%ÞÀÂÂÂ‘LªIdentifierÍ%pÍ%x¨categoryM®BlockStatementÍ%zÍ%Þ‘R¯ReturnStatementÍ%…Í%×T®CallExpressionÍ%ŒÍ%ÖQ°MemberExpressionÍ%ŒÍ%°T®CallExpressionÍ%ŒÍ%©Q°MemberExpressionÍ%ŒÍ%§LªIdentifierÍ%ŒÍ%—«ConstantLibLªIdentifierÍ%˜Í%§¯getAllConstantsÂÂÂLªIdentifierÍ%ªÍ%°¦filterÂÂ‘O·ArrowFunctionExpressionÍ%±Í%ÕÀÃÂÂ‘LªIdentifierÍ%±Í%¶¥entryY°BinaryExpressionÍ%ºÍ%ÕQ°MemberExpressionÍ%ºÍ%ÈLªIdentifierÍ%ºÍ%¿¥entryLªIdentifierÍ%ÀÍ%È¨categoryÂÂ£===LªIdentifierÍ%ÍÍ%Õ¨categoryÂN°MethodDefinitionÍ&Í&]ÃÂLªIdentifierÍ&Í&ªisConstant¦methodO²FunctionExpressionÍ&Í&]ÀÂÂÂ‘LªIdentifierÍ&Í& ¦symbolM®BlockStatementÍ&"Í&]‘R¯ReturnStatementÍ&-Í&VT®CallExpressionÍ&4Í&UQ°MemberExpressionÍ&4Í&MQ°MemberExpressionÍ&4Í&ILªIdentifierÍ&4Í&?«ConstantLibLªIdentifierÍ&@Í&I©constantsÂÂLªIdentifierÍ&JÍ&M£hasÂÂ‘LªIdentifierÍ&NÍ&T¦symbolÂN°MethodDefinitionÍ&ŠÍ'ÃÂLªIdentifierÍ&‘Í&¡°getConstantValue¦methodO²FunctionExpressionÍ&¡Í'ÀÂÂÂ‘LªIdentifierÍ&¢Í&¨¦symbolM®BlockStatementÍ&ªÍ'’]³VariableDeclarationÍ&µÍ&ã‘^²VariableDeclaratorÍ&»Í&âLªIdentifierÍ&»Í&À¥entryT®CallExpressionÍ&ÃÍ&âQ°MemberExpressionÍ&ÃÍ&ÚLªIdentifierÍ&ÃÍ&Î«ConstantLibLªIdentifierÍ&ÏÍ&Ú«getConstantÂÂ‘LªIdentifierÍ&ÛÍ&á¦symbolÂ¥constR¯ReturnStatementÍ&íÍ'S¯ChainExpressionÍ&ôÍ' Q°MemberExpressionÍ&ôÍ' LªIdentifierÍ&ôÍ&ù¥entryLªIdentifierÍ&ûÍ' ¥valueÂÃN°MethodDefinitionÍ'9Í+)ÃÂLªIdentifierÍ'@Í'\¼replaceConstantsInExpression¦methodO²FunctionExpressionÍ'\Í+)ÀÂÂÂ‘LªIdentifierÍ']Í'a¤exprM®BlockStatementÍ'cÍ+)”]³VariableDeclarationÍ'nÍ'€‘^²VariableDeclaratorÍ'rÍ'LªIdentifierÍ'rÍ'x¦resultLªIdentifierÍ'{Í'¤expr£let]³VariableDeclarationÍ'«Í'û‘^²VariableDeclaratorÍ'±Í'úLªIdentifierÍ'±Í'¸§symbolsT®CallExpressionÍ'»Í'úQ°MemberExpressionÍ'»Í'ÛT®CallExpressionÍ'»Í'ÖQ°MemberExpressionÍ'»Í'ÔLªIdentifierÍ'»Í'Æ«ConstantLibLªIdentifierÍ'ÇÍ'Ô­getAllSymbolsÂÂÂLªIdentifierÍ'×Í'Û¤sortÂÂ‘O·ArrowFunctionExpressionÍ'ÜÍ'ùÀÃÂÂ’LªIdentifierÍ'ÝÍ'Þ¡aLªIdentifierÍ'àÍ'á¡bY°BinaryExpressionÍ'æÍ'ùQ°MemberExpressionÍ'æÍ'îLªIdentifierÍ'æÍ'ç¡bLªIdentifierÍ'èÍ'î¦lengthÂÂ¡-Q°MemberExpressionÍ'ñÍ'ùLªIdentifierÍ'ñÍ'ò¡aLªIdentifierÍ'óÍ'ù¦lengthÂÂÂ¥constÔr_—¤type¥start£end¥await¤left¥right¤body®ForOfStatementÍ($Í+
+Â]³VariableDeclarationÍ()Í(5‘^²VariableDeclaratorÍ(/Í(5LªIdentifierÍ(/Í(5¦symbolÀ¥constLªIdentifierÍ(9Í(@§symbolsM®BlockStatementÍ(BÍ+
+’]³VariableDeclarationÍ(QÍ(„‘^²VariableDeclaratorÍ(WÍ(ƒLªIdentifierÍ(WÍ(\¥valueT®CallExpressionÍ(_Í(ƒQ°MemberExpressionÍ(_Í({LªIdentifierÍ(_Í(j«ConstantLibLªIdentifierÍ(kÍ({°getConstantValueÂÂ‘LªIdentifierÍ(|Í(‚¦symbolÂ¥constP«IfStatementÍ(’Í*ÿLªIdentifierÍ(–Í(›¥valueM®BlockStatementÍ(Í*ÿ“]³VariableDeclarationÍ(°Í(î‘^²VariableDeclaratorÍ(¶Í(íLªIdentifierÍ(¶Í(½§escapedT®CallExpressionÍ(ÀÍ(íQ°MemberExpressionÍ(ÀÍ(ÎLªIdentifierÍ(ÀÍ(Æ¦symbolLªIdentifierÍ(ÇÍ(Î§replaceÂÂ’Ôr`–¤type¥start£end¥value£raw¥regex§LiteralÍ(ÏÍ(ä’²[.*+?^${}()|[\]\\]¡gµ/[.*+?^${}()|[\]\\]/gÔra’§pattern¥flags²[.*+?^${}()|[\]\\]¡gW§LiteralÍ(æÍ(ì£\$&¦'\\$&'Â¥const]³VariableDeclarationÍ)zÍ)½‘^²VariableDeclaratorÍ)~Í)¼LªIdentifierÍ)~Í)¯boundaryPatternZ¯TemplateLiteralÍ)Í)¼‘LªIdentifierÍ)¤Í)«§escaped’[¯TemplateElementÍ)‘Í)¢\±(?<![a-zA-Z0-9.])±(?<![a-zA-Z0-9.])Â[¯TemplateElementÍ)¬Í)»\¯(?![a-zA-Z0-9])¯(?![a-zA-Z0-9])Ã£letÔrb–¤type¥start£end¥block§handler©finalizer¬TryStatementÍ)ÏÍ*ðM®BlockStatementÍ)ÓÍ*h’]³VariableDeclarationÍ)êÍ*‘^²VariableDeclaratorÍ)ðÍ*LªIdentifierÍ)ðÍ)õ¥regexÔrc•¤type¥start£end¦callee©arguments­NewExpressionÍ)øÍ*LªIdentifierÍ)üÍ*¦RegExp’LªIdentifierÍ*Í*¯boundaryPatternW§LiteralÍ*Í*¡g£'g'¥constS³ExpressionStatementÍ*/Í*UX´AssignmentExpressionÍ*/Í*T¡=LªIdentifierÍ*/Í*5¦resultT®CallExpressionÍ*8Í*TQ°MemberExpressionÍ*8Í*FLªIdentifierÍ*8Í*>¦resultLªIdentifierÍ*?Í*F§replaceÂÂ’LªIdentifierÍ*GÍ*L¥regexLªIdentifierÍ*NÍ*S¥valueÂÔrd•¤type¥start£end¥param¤body«CatchClauseÍ*zÍ*ðLªIdentifierÍ*Í*‚¡eM®BlockStatementÍ*„Í*ð‘S³ExpressionStatementÍ*›Í*ÝT®CallExpressionÍ*›Í*ÜQ°MemberExpressionÍ*›Í*¯T®CallExpressionÍ*›Í*ªLªIdentifierÍ*›Í*¨­getMathLoggerÂLªIdentifierÍ*«Í*¯¤warnÂÂ‘Z¯TemplateLiteralÍ*°Í*Û’LªIdentifierÍ*ÍÍ*Ó¦symbolLªIdentifierÍ*ØÍ*Ù¡e“[¯TemplateElementÍ*±Í*Ë\Ù([ConstantLib] æ­£åˆ™è¡¨è¾¾å¼é”™è¯¯ for Ù([ConstantLib] æ­£åˆ™è¡¨è¾¾å¼é”™è¯¯ for Â[¯TemplateElementÍ*ÔÍ*Ö\¢: ¢: Â[¯TemplateElementÍ*ÚÍ*Ú\  ÃÂÀÀR¯ReturnStatementÍ+Í+"LªIdentifierÍ+Í+!¦resultN°MethodDefinitionÍ+RÍ,9ÃÂLªIdentifierÍ+YÍ+i°getAllCategories¦methodO²FunctionExpressionÍ+iÍ,9ÀÂÂÂM®BlockStatementÍ+lÍ,9“]³VariableDeclarationÍ+wÍ+”‘^²VariableDeclaratorÍ+}Í+“LªIdentifierÍ+}Í+‡ªcategoriesc­NewExpressionÍ+ŠÍ+“LªIdentifierÍ+ŽÍ+‘£Set¥const_®ForOfStatementÍ+žÍ,
+Â]³VariableDeclarationÍ+£Í+®‘^²VariableDeclaratorÍ+©Í+®LªIdentifierÍ+©Í+®¥entryÀ¥constT®CallExpressionÍ+²Í+ÏQ°MemberExpressionÍ+²Í+ÍLªIdentifierÍ+²Í+½«ConstantLibLªIdentifierÍ+¾Í+Í¯getAllConstantsÂÂÂM®BlockStatementÍ+ÑÍ,
+‘S³ExpressionStatementÍ+àÍ+ÿT®CallExpressionÍ+àÍ+þQ°MemberExpressionÍ+àÍ+îLªIdentifierÍ+àÍ+êªcategoriesLªIdentifierÍ+ëÍ+î£addÂÂ‘Q°MemberExpressionÍ+ïÍ+ýLªIdentifierÍ+ïÍ+ô¥entryLªIdentifierÍ+õÍ+ý¨categoryÂÂÂR¯ReturnStatementÍ,Í,2T®CallExpressionÍ,Í,1Q°MemberExpressionÍ,Í,%LªIdentifierÍ,Í, ¥ArrayLªIdentifierÍ,!Í,%¤fromÂÂ‘LªIdentifierÍ,&Í,0ªcategoriesÂN°MethodDefinitionÍ,_Í,ìÃÂLªIdentifierÍ,fÍ,k¥clear¦methodO²FunctionExpressionÍ,kÍ,ìÀÂÂÂM®BlockStatementÍ,nÍ,ì“S³ExpressionStatementÍ,yÍ,—T®CallExpressionÍ,yÍ,–Q°MemberExpressionÍ,yÍ,”Q°MemberExpressionÍ,yÍ,ŽLªIdentifierÍ,yÍ,„«ConstantLibLªIdentifierÍ,…Í,Ž©constantsÂÂLªIdentifierÍ,Í,”¥clearÂÂÂS³ExpressionStatementÍ,¡Í,»T®CallExpressionÍ,¡Í,ºQ°MemberExpressionÍ,¡Í,¸Q°MemberExpressionÍ,¡Í,²LªIdentifierÍ,¡Í,¬«ConstantLibLªIdentifierÍ,­Í,²¥idMapÂÂLªIdentifierÍ,³Í,¸¥clearÂÂÂS³ExpressionStatementÍ,ÅÍ,åX´AssignmentExpressionÍ,ÅÍ,ä¡=Q°MemberExpressionÍ,ÅÍ,ÜLªIdentifierÍ,ÅÍ,Ð«ConstantLibLªIdentifierÍ,ÑÍ,Ü«initializedÂÂW§LiteralÍ,ßÍ,äÂ¥falseÀ‘Ôre•¤type¥start£endªspecifiers¦source±ImportDeclarationÍ#ÍP‘Ôrf•¤type¥start£end¨imported¥local¯ImportSpecifierÍ,Í9LªIdentifierÍ,Í9­getMathLoggerLªIdentifierÍ,Í9­getMathLoggerW§LiteralÍAÍO¬./MathLogger®'./MathLogger'

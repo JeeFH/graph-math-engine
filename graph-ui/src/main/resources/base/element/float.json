@@ -1,0 +1,19 @@
+{
+  "float": [
+    { "name": "spacing_xs", "value": "4vp" },
+    { "name": "spacing_sm", "value": "8vp" },
+    { "name": "page_padding_h", "value": "16vp" },
+    { "name": "radius_xs", "value": "4vp" },
+    { "name": "radius_sm", "value": "8vp" },
+    { "name": "radius_md", "value": "12vp" },
+    { "name": "radius_xl", "value": "20vp" },
+    { "name": "font_overline", "value": "10fp" },
+    { "name": "font_caption", "value": "12fp" },
+    { "name": "font_body_sm", "value": "14fp" },
+    { "name": "font_body", "value": "16fp" },
+    { "name": "font_title_sm", "value": "18fp" },
+    { "name": "font_title", "value": "20fp" },
+    { "name": "font_display_sm", "value": "22fp" },
+    { "name": "button_height_sm", "value": "40vp" }
+  ]
+}

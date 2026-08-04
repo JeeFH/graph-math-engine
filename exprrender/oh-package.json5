@@ -1,0 +1,19 @@
+﻿{
+  "name": "exprrender",
+  "version": "0.1.0",
+  "description": "Self-contained math expression rendering engine for HarmonyOS: linear string -> VST (visual syntax tree) -> Box layout tree -> Canvas2D pixels. TeX-style metrics, zero UI dependency.",
+  "main": "Index.ets",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "keywords": [
+    "harmonyos",
+    "arkts",
+    "math-rendering",
+    "formula",
+    "canvas",
+    "vst",
+    "tex"
+  ],
+  "packageType": "har",
+  "dependencies": {}
+}

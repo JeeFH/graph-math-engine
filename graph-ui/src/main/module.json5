@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "graphui",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "app": {
+    "products": [
+      {
+        "name": "default",
+        "targetSdkVersion": "6.1.0(23)",
+        "compatibleSdkVersion": "6.1.0(23)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "mathkit",
+      "srcPath": "./mathkit"
+    },
+    {
+      "name": "exprrender",
+      "srcPath": "./exprrender"
+    },
+    {
+      "name": "graph",
+      "srcPath": "./graph"
+    },
+    {
+      "name": "graphui",
+      "srcPath": "./graph-ui"
+    },
+    {
+      "name": "demo",
+      "srcPath": "./demo",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

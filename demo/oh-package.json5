@@ -1,0 +1,14 @@
+﻿{
+  "name": "demo",
+  "version": "0.1.0",
+  "description": "Demo HAP for graph-math-engine: simple expression input + interactive GraphCanvas plotting, no keyboard layout.",
+  "main": "",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "dependencies": {
+    "mathkit": "file:../mathkit",
+    "exprrender": "file:../exprrender",
+    "graph": "file:../graph",
+    "graph-ui": "file:../graph-ui"
+  }
+}

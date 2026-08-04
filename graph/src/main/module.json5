@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "graph",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}
