@@ -44,8 +44,9 @@
 import {
   GraphMath, Viewport, FunctionEvaluator, FunctionSampleCache, WorldSample, SampleEngine,
   GraphFunction, GraphLineStyle, MarkerCategory, nextLineStyle, GRAPH_COLOR_PICKER, graphDisplayName,
-  GlobalAnalyzer, GlobalAnalysisResult, RenderDispatcher, RenderMode, GraphImageExporter
+  GlobalAnalyzer, GlobalAnalysisResult, RenderDispatcher, RenderMode
 } from 'calcengine-graph';
+import { GraphImageExporter } from '../export/GraphImageExporter';
 import { GraphCanvasController } from './GraphCanvasController';
 import { common } from '@kit.AbilityKit';
 import { image } from '@kit.ImageKit';

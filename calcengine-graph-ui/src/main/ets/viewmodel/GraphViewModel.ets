@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-// calcengine-graph/src/main/ets/viewmodel/GraphViewModel.ets
+// calcengine-graph-ui/src/main/ets/viewmodel/GraphViewModel.ets
 /**
  * 图形模式 ViewModel（状态管理核心）
  *
@@ -33,16 +33,18 @@
  *
  * 约束：
  * - 纯逻辑类，不依赖任何 UI 组件（无 build()/struct，不 import 任何组件）
- * - 可观察属性以 @Trace 标记，配合 @ObservedV2 驱动 @ComponentV2（瀹夸富缁勪欢）重渲染
+ * - 可观察属性以 @Trace 标记，配合 @ObservedV2 驱动 @ComponentV2（宿主组件）重渲染
  * - ArkTS 严格模式：无 any/unknown，所有字段均有明确类型注解
  */
 
-import { GraphFunction, GraphLineStyle, MarkerCategory, GRAPH_PALETTE, graphDisplayName, nextFreeLabelIndex } from '../types/GraphTypes';
-import { RenderDispatcher } from '../engine/RenderDispatcher';
-import { RenderMode, renderModeLabel } from '../engine/IRenderer';
-import { ClassifyResult, ExprClassifier } from '../engine/ExprClassifier';
-import { FunctionEvaluator } from '../engine/FunctionEvaluator';
-import { BivariateEvaluator } from '../engine/BivariateEvaluator';
+// 引擎符号统一从 calcengine-graph 包入口导入（本文件已从引擎包移出至 UI 包，
+// 不再与 engine/types 同处一个模块，相对路径已不适用）。
+import {
+  GraphFunction, GraphLineStyle, MarkerCategory, GRAPH_PALETTE,
+  graphDisplayName, nextFreeLabelIndex,
+  RenderDispatcher, RenderMode, renderModeLabel, ExprClassifier,
+  FunctionEvaluator, BivariateEvaluator, type ClassifyResult
+} from 'calcengine-graph';
 import { MathField, parseLinear, simplify, serializeLinear, Cursor, VstRow } from 'calcengine-exp';
 import { getMathLogger } from 'calcengine-core';
 

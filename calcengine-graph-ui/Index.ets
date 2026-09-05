@@ -36,10 +36,18 @@ export { GraphDisplayArea } from './src/main/ets/components/GraphDisplayArea';
 export { AnalysisDock } from './src/main/ets/components/AnalysisDock';
 export type { AnalysisCardData } from './src/main/ets/components/AnalysisDock';
 
+// ── 状态管理（函数列表 / MathField 实例池 / 校验 / RenderDispatcher 持有）──
+// 从 calcengine-graph 移入：本类依赖 calcengine-exp 的 MathField 与序列化能力，
+// 属于 UI 状态层而非纯引擎职责。
+export { GraphViewModel } from './src/main/ets/viewmodel/GraphViewModel';
+
 // ── 宿主注入适配器（分享 / 缩略图存储） ──
 export type { GraphShareAdapter, GraphStorageAdapter } from './src/main/ets/support/GraphAdapters';
 export { NoopShareAdapter, NoopStorageAdapter } from './src/main/ets/support/GraphAdapters';
 export { GraphExportService } from './src/main/ets/export/GraphExportService';
+// 图象水印合成 + JPEG 打包（从 calcengine-graph 移入，与 GraphExportService 同层）
+// 品牌信息由宿主注入（logoResId / brandName），均为可选
+export { GraphImageExporter } from './src/main/ets/export/GraphImageExporter';
 
 // ── 辅助组件与常量 ──
 export { ModeTag, MODE_STYLES, MODE_STYLES_DARK } from './src/main/ets/support/ModeTag';

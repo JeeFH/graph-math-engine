@@ -22,7 +22,6 @@
   ],
   "packageType": "har",
   "dependencies": {
-    "calcengine-core": "file:../calcengine-core",
-    "calcengine-exp": "file:../calcengine-exp"
+    "calcengine-core": "file:../calcengine-core"
   }
 }

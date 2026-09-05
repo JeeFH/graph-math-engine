@@ -21,6 +21,7 @@
   "packageType": "har",
   "dependencies": {
     "calcengine-graph": "file:../calcengine-graph",
-    "calcengine-exp": "file:../calcengine-exp"
+    "calcengine-exp": "file:../calcengine-exp",
+    "calcengine-core": "file:../calcengine-core"
   }
 }

@@ -44,6 +44,9 @@ export { RenderDispatcher } from './src/main/ets/engine/RenderDispatcher';
 export { RenderMode, renderModeLabel } from './src/main/ets/engine/IRenderer';
 export type { RenderData, LineSegment, Polygon } from './src/main/ets/engine/IRenderer';
 
+// ── 提取预算（分帧可中断提取的调度参数，宿主驱动 pumpExtractions 时使用）──
+export { ExtractionBudget } from './src/main/ets/engine/ExtractionBudget';
+
 // ── 采样引擎与缓存 ──
 export { SampleEngine } from './src/main/ets/engine/SampleEngine';
 export { FunctionSampleCache, WorldSample } from './src/main/ets/engine/SampleCache';
@@ -54,9 +57,9 @@ export { GridCache2D } from './src/main/ets/engine/GridCache2D';
 export { GraphAnalyzer, GraphPoint, Extremum } from './src/main/ets/engine/GraphAnalyzer';
 export { GlobalAnalyzer, GlobalAnalysisResult, HorizontalAsymptote, ObliqueAsymptote } from './src/main/ets/engine/GlobalAnalyzer';
 
-// ── 文本格式化 / 图像导出工具 ──
+// ── 文本格式化工具 ──
 export { fmt, fmtPi, formatIntervals, domainTextOf, rangeTextOf, symmetryTextOf, periodTextOf, growthTextOf } from './src/main/ets/utils/AnalysisTextFormatter';
-export { GraphImageExporter } from './src/main/ets/utils/GraphImageExporter';
 
-// ── 图形模式 ViewModel（状态管理核心） ──
-export { GraphViewModel } from './src/main/ets/viewmodel/GraphViewModel';
+// 注：GraphViewModel 与 GraphImageExporter 已移至 calcengine-graph-ui。
+// 前者依赖 calcengine-exp 的 MathField，后者属图片后处理，均不属于纯引擎职责；
+// 移出后本包不再依赖 calcengine-exp，仅需表达式渲染的使用方可单独安装。

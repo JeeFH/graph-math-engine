@@ -30,8 +30,8 @@
  * 状态管理：GraphViewModel 为单一真相源，每次变更后 sync() 刷新 @State。
  */
 
-import { GraphViewModel, GraphFunction, GraphLineStyle, MarkerCategory } from 'calcengine-graph';
-import { GraphCanvas, GraphCanvasController, GraphDisplayArea } from 'calcengine-graph-ui';
+import { GraphFunction, GraphLineStyle, MarkerCategory } from 'calcengine-graph';
+import { GraphCanvas, GraphCanvasController, GraphDisplayArea, GraphViewModel } from 'calcengine-graph-ui';
 
 @Entry
 @Component

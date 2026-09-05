@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-// calcengine-graph/src/main/ets/utils/GraphImageExporter.ets
+// calcengine-graph-ui/src/main/ets/export/GraphImageExporter.ets
 /**
  * 图形图象导出工具类
  *
