@@ -1,0 +1,26 @@
+﻿{
+  "name": "calcengine-graph-ui",
+  "version": "0.2.0",
+  "description": "CalcEngine reference UI components for the graph plotting engine on HarmonyOS: GraphCanvas (interactive canvas with gestures, settings, export), GraphDisplayArea (function slot list), AnalysisDock and GraphViewModel. Hosts inject share/storage adapters. Reference implementation - not yet production-validated.",
+  "main": "Index.ets",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeeFH/graph-math-engine.git"
+  },
+  "homepage": "https://github.com/JeeFH/graph-math-engine#readme",
+  "keywords": [
+    "harmonyos",
+    "arkts",
+    "calcengine",
+    "graph",
+    "canvas",
+    "plot-ui"
+  ],
+  "packageType": "har",
+  "dependencies": {
+    "calcengine-graph": "file:../calcengine-graph",
+    "calcengine-exp": "file:../calcengine-exp"
+  }
+}

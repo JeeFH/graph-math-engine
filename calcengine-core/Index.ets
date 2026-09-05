@@ -19,38 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/**
- * Demo 入口 Ability：加载演示页面 pages/Index。
- */
 
-import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { window } from '@kit.ArkUI';
-import { getMathLogger } from 'calcengine-core';
+// Index.ets - calcengine-core 模块公开 API
+// CalcEngine 共享底座：表达式分词 + 可扩展常数库 + 日志抽象，零 UI 依赖。
 
-export default class EntryAbility extends UIAbility {
-  onCreate(_want: Want, _launchParam: AbilityConstant.LaunchParam): void {
-    getMathLogger().info('Demo EntryAbility onCreate');
-  }
+// ── 表达式分词器 ──
+export { default as Tokenizer, type IdentifierPosition, type TokenPosition } from './src/main/ets/math/Tokenizer';
 
-  onDestroy(): void {
-    getMathLogger().info('Demo EntryAbility onDestroy');
-  }
+// ── 可扩展常数库 ──
+export { ConstantLib, type ConstantEntry } from './src/main/ets/math/ConstantLib';
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
-    windowStage.loadContent('pages/Index', (err): void => {
-      if (err.code) {
-        getMathLogger().error('Demo loadContent failed: ' + JSON.stringify(err));
-        return;
-      }
-    });
-  }
-
-  onWindowStageDestroy(): void {
-  }
-
-  onForeground(): void {
-  }
-
-  onBackground(): void {
-  }
-}
+// ── 日志抽象（宿主可注入自定义实现） ──
+export { setMathLogger, getMathLogger, type MathLogger } from './src/main/ets/math/MathLogger';

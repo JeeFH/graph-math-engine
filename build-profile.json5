@@ -25,20 +25,20 @@
   },
   "modules": [
     {
-      "name": "mathkit",
-      "srcPath": "./mathkit"
+      "name": "calcenginecore",
+      "srcPath": "./calcengine-core"
     },
     {
-      "name": "exprrender",
-      "srcPath": "./exprrender"
+      "name": "calcengineexp",
+      "srcPath": "./calcengine-exp"
     },
     {
-      "name": "graph",
-      "srcPath": "./graph"
+      "name": "calcenginegraph",
+      "srcPath": "./calcengine-graph"
     },
     {
-      "name": "graphui",
-      "srcPath": "./graph-ui"
+      "name": "calcenginegraphui",
+      "srcPath": "./calcengine-graph-ui"
     },
     {
       "name": "demo",

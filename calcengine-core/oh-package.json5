@@ -1,0 +1,23 @@
+﻿{
+  "name": "calcengine-core",
+  "version": "0.2.0",
+  "description": "CalcEngine core: expression tokenizer, extensible math constant library and logger abstraction. Shared lexical base for the CalcEngine engine family. Zero UI dependency.",
+  "main": "Index.ets",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeeFH/graph-math-engine.git"
+  },
+  "homepage": "https://github.com/JeeFH/graph-math-engine#readme",
+  "keywords": [
+    "harmonyos",
+    "arkts",
+    "calcengine",
+    "tokenizer",
+    "math",
+    "expression"
+  ],
+  "packageType": "har",
+  "dependencies": {}
+}

@@ -1,0 +1,28 @@
+﻿{
+  "name": "calcengine-graph",
+  "version": "0.2.0",
+  "description": "CalcEngine 2D graph plotting engine for HarmonyOS: expression classification, function evaluation, adaptive sampling, explicit/implicit/inequality/bivariate renderers, budgeted frame-sliced contour extraction and global function analysis. Pure logic, zero UI dependency.",
+  "main": "Index.ets",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeeFH/graph-math-engine.git"
+  },
+  "homepage": "https://github.com/JeeFH/graph-math-engine#readme",
+  "keywords": [
+    "harmonyos",
+    "arkts",
+    "calcengine",
+    "graph",
+    "plot",
+    "function-analysis",
+    "implicit-curve",
+    "marching-squares"
+  ],
+  "packageType": "har",
+  "dependencies": {
+    "calcengine-core": "file:../calcengine-core",
+    "calcengine-exp": "file:../calcengine-exp"
+  }
+}

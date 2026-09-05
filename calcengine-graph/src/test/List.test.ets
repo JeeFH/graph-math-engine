@@ -19,38 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/**
- * Demo 入口 Ability：加载演示页面 pages/Index。
- */
 
-import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { window } from '@kit.ArkUI';
-import { getMathLogger } from 'calcengine-core';
+import graphLocalUnitTest from './LocalUnit.test';
+import engineFixesTest from './EngineFixes.test';
 
-export default class EntryAbility extends UIAbility {
-  onCreate(_want: Want, _launchParam: AbilityConstant.LaunchParam): void {
-    getMathLogger().info('Demo EntryAbility onCreate');
-  }
-
-  onDestroy(): void {
-    getMathLogger().info('Demo EntryAbility onDestroy');
-  }
-
-  onWindowStageCreate(windowStage: window.WindowStage): void {
-    windowStage.loadContent('pages/Index', (err): void => {
-      if (err.code) {
-        getMathLogger().error('Demo loadContent failed: ' + JSON.stringify(err));
-        return;
-      }
-    });
-  }
-
-  onWindowStageDestroy(): void {
-  }
-
-  onForeground(): void {
-  }
-
-  onBackground(): void {
-  }
+export default function testsuite() {
+  graphLocalUnitTest();
+  engineFixesTest();
 }

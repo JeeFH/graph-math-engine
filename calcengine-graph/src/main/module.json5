@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "calcenginegraph",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

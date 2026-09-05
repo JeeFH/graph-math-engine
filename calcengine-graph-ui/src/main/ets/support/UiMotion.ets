@@ -20,37 +20,28 @@
  * SOFTWARE.
  */
 /**
- * Demo 入口 Ability：加载演示页面 pages/Index。
+ * 动效时长常量（Design Token）
+ *
+ * ArkUI animateTo / .animation 的 duration 参数不支持 $r() 资源引用，
+ * 故以常量类集中管理，供 graph-ui 内部统一引用。
+ *
+ * 使用方式：
+ *   import { UiMotion } from 'calcengine-graph-ui';
+ *   animateTo({ duration: UiMotion.NORMAL }, () => { ... })
  */
+export class UiMotion {
+  /** 快速反馈：按压态、微交互、小元素显隐 */
+  static readonly FAST: number = 150;
 
-import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { window } from '@kit.ArkUI';
-import { getMathLogger } from 'calcengine-core';
+  /** 常规过渡：列表项展开、Tab 切换、普通属性动画 */
+  static readonly NORMAL: number = 200;
 
-export default class EntryAbility extends UIAbility {
-  onCreate(_want: Want, _launchParam: AbilityConstant.LaunchParam): void {
-    getMathLogger().info('Demo EntryAbility onCreate');
-  }
+  /** 中速过渡：面板展开/收起、弹窗出入场、较大区域变化 */
+  static readonly MEDIUM: number = 300;
 
-  onDestroy(): void {
-    getMathLogger().info('Demo EntryAbility onDestroy');
-  }
+  /** 慢速过渡：页面级转场、全屏覆盖物、引导动效 */
+  static readonly SLOW: number = 400;
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
-    windowStage.loadContent('pages/Index', (err): void => {
-      if (err.code) {
-        getMathLogger().error('Demo loadContent failed: ' + JSON.stringify(err));
-        return;
-      }
-    });
-  }
-
-  onWindowStageDestroy(): void {
-  }
-
-  onForeground(): void {
-  }
-
-  onBackground(): void {
-  }
+  /** 错峰入场步长：多卡片依次入场的相邻延迟间隔 */
+  static readonly STAGGER: number = 100;
 }

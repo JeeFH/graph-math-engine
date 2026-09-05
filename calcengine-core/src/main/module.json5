@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "calcenginecore",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

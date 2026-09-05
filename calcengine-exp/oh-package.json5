@@ -1,0 +1,25 @@
+﻿{
+  "name": "calcengine-exp",
+  "version": "0.2.0",
+  "description": "CalcEngine expression rendering engine for HarmonyOS: linear string -> VST (visual syntax tree) -> Box layout tree -> Canvas2D pixels. TeX-style metrics, editable MathField, zero UI framework dependency.",
+  "main": "Index.ets",
+  "author": "graph-math-engine contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeeFH/graph-math-engine.git"
+  },
+  "homepage": "https://github.com/JeeFH/graph-math-engine#readme",
+  "keywords": [
+    "harmonyos",
+    "arkts",
+    "calcengine",
+    "math-rendering",
+    "formula",
+    "canvas",
+    "vst",
+    "tex"
+  ],
+  "packageType": "har",
+  "dependencies": {}
+}
