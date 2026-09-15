@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 /**
- * exprrender 本地单元测试
+ * calcengine-exp 本地单元测试
  * - parseLinear ↔ serializeLinear 往返幂等性
  * - simplify 化简规则（同底数因子合并为幂）
  * - TreeCursor 分支导航（resolveRow / resolveBranch）

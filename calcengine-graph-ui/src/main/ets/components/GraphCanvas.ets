@@ -645,7 +645,7 @@ export struct GraphCanvas {
   }
 
   /**
-   * 使用 exprrender 引擎将表达式渲染为数学排版 PixelMap。
+   * 使用 calcengine-exp 引擎将表达式渲染为数学排版 PixelMap。
    * 使用专用离屏 Canvas（exprExportContext），不干扰主画布内容。
    * 渲染管线与 ExprView 完全一致（parseLinear → simplify → ExprRenderer.render → measureAndRelayout → box.draw），
    * 确保水印中的表达式与屏幕上 ExprView 的排版质量一致（而非原始字符串直出）。

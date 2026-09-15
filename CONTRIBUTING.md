@@ -43,27 +43,38 @@
 ### 前置要求
 
 - DevEco Studio 6.0+
-- HarmonyOS NEXT SDK
+- HarmonyOS NEXT SDK（本仓 `build-profile.json5` 目标 6.1.0(23)）
 - Node.js 16+
 
 ### 本地开发
 
-```bash
-# 克隆仓库
-git clone https://github.com/your-username/graph-math-engine.git
-cd graph-math-engine
+本仓**不含** `hvigorw` / `ohpm` 包装脚本，须使用 DevEco Studio 自带的工具链（或直接用 GUI 的 Sync / Build / Run）：
 
-# 安装依赖
-ohpm install
+```powershell
+# 先克隆、再安装依赖
+#   git clone https://github.com/JeeFH/graph-math-engine.git
+#   cd graph-math-engine
 
-# 构建所有模块
-hvigorw assembleHar
+# DevEco Studio 默认安装路径；请按实际安装位置调整
+$env:DEVECO_SDK_HOME = "D:\Deveco Studio\6.1.1\DevEco Studio\sdk"
+$hvigor = "D:\Deveco Studio\6.1.1\DevEco Studio\tools\hvigor\bin\hvigorw.bat"
+$ohpm   = "D:\Deveco Studio\6.1.1\DevEco Studio\tools\ohpm\bin\ohpm.bat"
 
-# 运行测试
-hvigorw test -p module=mathkit -p coverage=false
-hvigorw test -p module=exprrender -p coverage=false
-hvigorw test -p module=graph -p coverage=false
+& $ohpm install
+& $hvigor --sync
+
+# 构建全部 HAR 产物
+& $hvigor assembleHar -p product=default
+
+# 运行测试（-p module= 取模块名，非包名）
+& $hvigor test -p module=calcenginecore -p coverage=false
+& $hvigor test -p module=calcengineexp -p coverage=false
+& $hvigor test -p module=calcenginegraph -p coverage=false
 ```
+
+`DEVECO_SDK_HOME` 必须指向 `<DevEco 安装目录>\sdk`（`DevEco Studio` 这一层目录不能省略），否则会报 `Invalid value of 'DEVECO_SDK_HOME'`。
+
+> 模块名与包名不同：`module.json5` / `build-profile.json5` 的模块名不含连字符（`calcenginecore`），而 `oh-package.json5` 的包名含连字符（`calcengine-core`）。这是 HarmonyOS 的约束。
 
 ## 代码规范
 
@@ -99,7 +110,7 @@ chore: 构建/工具变更
 
 ```
 feat(graph): 添加斜渐近线检测
-fix(exprrender): 修复分数盒宽度计算错误
+fix(calcengine-exp): 修复分数盒宽度计算错误
 docs: 更新 ARCHITECTURE.md 采样算法说明
 ```
 
@@ -109,27 +120,39 @@ docs: 更新 ARCHITECTURE.md 采样算法说明
 
 每个模块的测试位于 `src/test/` 目录：
 
-- `mathkit/src/test/LocalUnit.test.ets`：Tokenizer 分词边界
-- `exprrender/src/test/LocalUnit.test.ets`：VST 往返幂等、化简规则
-- `graph/src/test/LocalUnit.test.ets`：分类、求值、分析
+- `calcengine-core/src/test/LocalUnit.test.ets`：Tokenizer 分词边界
+- `calcengine-exp/src/test/LocalUnit.test.ets`：VST 往返幂等、化简规则
+- `calcengine-graph/src/test/LocalUnit.test.ets`：分类、求值、分析
+- `calcengine-graph/src/test/EngineFixes.test.ets`：表达式归一化、实数域根、静默失败显式化、分帧提取的预算回归
 
 ### 运行测试
 
-```bash
+```powershell
 # 单模块测试
-hvigorw test -p module=mathkit -p coverage=false
+& $hvigor test -p module=calcenginecore -p coverage=false
 
 # 指定测试用例
-hvigorw test -p module=mathkit -p scope=TokenizerTest#scientific_notation
+& $hvigor test -p module=calcenginecore -p scope=TokenizerTest#scientific_notation
+```
+
+### 提交前自检
+
+```powershell
+# 校验跨包导入的符号均在目标包 Index.ets 导出面内、且依赖已直接声明
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-exports.ps1
 ```
 
 ## 发布流程
 
 1. 更新 `CHANGELOG.md`
 2. 更新各模块 `oh-package.json5` 版本号（语义化版本）
-3. 创建 Release PR
-4. 合并后打 tag：`git tag v0.x.0`
-5. 推送 tag：`git push --tags`
+3. 用 `scripts/prepare-publish.ps1` 把 `file:` 依赖切为版本区间并构建 HAR
+4. 按依赖顺序发布到 ohpm：`calcengine-core` → `calcengine-exp` → `calcengine-graph` → `calcengine-graph-ui`
+5. 创建 Release PR
+6. 合并后打 tag：`git tag v0.x.0`
+7. 推送 tag：`git push --tags`
+
+> `ohpm publish` 会拒绝相对路径嵌套依赖（`--disallow_nested_package`），因此**开发态的 `file:` 依赖不能直接发布**，必须先切换为 `^版本` 形式。
 
 ## 许可证
 

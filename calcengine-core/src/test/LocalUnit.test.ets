@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 /**
- * mathkit 本地单元测试：Tokenizer 分词边界
+ * calcengine-core 本地单元测试：Tokenizer 分词边界
  * - 一元负号 / 二元减号区分
  * - 科学计数法（含负指数）与常量 e 不误吞
  * - 常量符号（π）与标识符

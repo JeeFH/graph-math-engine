@@ -21,7 +21,7 @@
  */
 
 /**
- * mathkit/Tokenizer.ets
+ * calcengine-core/src/main/ets/math/Tokenizer.ets
  *
  * 表达式词法分词器（纯静态工具类，零 UI 依赖）。
  * 将线性表达式字符串切分为词法单元（token），支持：

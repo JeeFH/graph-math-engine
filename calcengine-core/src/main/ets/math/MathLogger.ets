@@ -21,7 +21,7 @@
  */
 
 /**
- * mathkit/MathLogger.ets
+ * calcengine-core/src/main/ets/math/MathLogger.ets
  *
  * SDK 轻量日志抽象。
  * SDK 内部不直接依赖 hilog 等宿主平台日志设施，
@@ -39,15 +39,15 @@ export interface MathLogger {
 /** 默认实现：console 输出 */
 class ConsoleMathLogger implements MathLogger {
   info(message: string): void {
-    console.info(`[mathkit] ${message}`);
+    console.info(`[calcengine-core] ${message}`);
   }
 
   warn(message: string): void {
-    console.warn(`[mathkit] ${message}`);
+    console.warn(`[calcengine-core] ${message}`);
   }
 
   error(message: string): void {
-    console.error(`[mathkit] ${message}`);
+    console.error(`[calcengine-core] ${message}`);
   }
 }
 
