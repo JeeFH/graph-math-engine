@@ -1,0 +1,30 @@
+name: CI
+
+# 只做静态校验，不编译。
+#
+# 编译 ArkTS HAR 需要 DevEco Studio / HarmonyOS SDK，不便也不宜放进公共 CI runner；
+# 因此编译校验仍由开发者在本地完成。本 workflow 负责在每次提交/PR 时守住结构性
+# 不变量，让"导入了未导出的符号""包版本不一致""依赖形态混用""改名残留"这类问题
+# 在 CI 就暴露，而不是等到消费方构建失败。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  static-checks:
+    # 校验脚本用 PowerShell 编写，Windows runner 原生可用
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cross-package export surface
+        shell: pwsh
+        run: ./scripts/check-exports.ps1
+
+      - name: Package health (files, versions, dependency form, naming, docs)
+        shell: pwsh
+        run: ./scripts/check-repo-health.ps1
