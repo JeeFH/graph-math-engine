@@ -1,1065 +1,0 @@
-тr@÷╙assertions╓code╢customTransformCache╛dependencies╒id╓meta╠moduleSideEffects╛originalCode╠originalSourcemap╚resolvedIds╝sourcemapChain╣syntheticNamedExports╣transformDependencies╝transformFiles╗cacheAstтrA░з-4/*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import SysTestKit from '../kit/SysTestKit';
-import { collectCoverageData } from '../coverage/coverageCollect';
-import { TAG, PrintTag } from '../../Constant';
-
-class OhReport {
-  constructor(attr) {
-    this.delegator = attr.delegator;
-    this.abilityDelegatorArguments = attr.abilityDelegatorArguments;
-    this.id = 'report';
-    this.index = 0;
-    this.duration = 0;
-    this.currentThreadName = 'mainThread';
-  }
-
-  init(coreContext) {
-    this.coreContext = coreContext;
-    this.suiteService = this.coreContext.getDefaultService('suite');
-    this.specService = this.coreContext.getDefaultService('spec');
-    if (SysTestKit.workerPort !== null) {
-      this.currentThreadName = SysTestKit.workerPort.name;
-    }
-  }
-
-  taskStart() {
-  }
-
-  async taskDone() {
-    let summary = this.suiteService.getSummary();
-    if (this.abilityDelegatorArguments !== null) {
-      this.taskDoneTime = new Date().getTime();
-      const configService = this.coreContext.getDefaultService('config');
-      const suiteService = this.coreContext.getDefaultService('suite');
-      const specService = this.coreContext.getDefaultService('spec');
-      if (configService['coverage'] === 'true') {
-        await collectCoverageData();
-      }
-      let message = '\n' + `${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ` + summary.total + ', Failure: ' + summary.failure;
-      message += ', Error: ' + summary.error;
-      message += ', Pass: ' + summary.pass;
-      message += ', Ignore: ' + summary.ignore;
-      if (specService.skipSpecNum > 0) {
-        message += ', SkipSpec: ' + specService.skipSpecNum;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_CODE}: ` + (summary.failure > 0 ? -1 : 0) + '\n';
-      let isHasError = summary.failure > 0 || summary.error > 0;
-      let config = this.coreContext.getDefaultService('config');
-      if (config.isBreakOnError() && isHasError) {
-        // Ф°╙Ф┴╖Х║▄Е┘╗И┐╗Х╞╢Ф≤▌
-        message += '\n' + `${PrintTag.OHOS_REPORT_RESULT}: breakOnError model, Stopping whole test suite if one specific test case failed or error` + '\n';
-      }
-      message += `${PrintTag.OHOS_REPORT_STATUS}: taskconsuming=` + summary.duration + '\n';
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-    }
-    if (SysTestKit.workerPort === null || SysTestKit.workerPort === undefined) {
-      // Д╦╩Г╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░ Г╩⌠Ф²÷Д╩╩Е┼║Ц─┌
-      console.info(`${TAG}report print success`);
-      this.delegator.finishTest('your test finished!!!', 0, () => { });
-    } else {
-      // workerГ╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░Е╟├Ф∙╟Ф█╝Е▐▒И─│Е┬╟Д╦╩Г╨©Г╗▀Д╦╜Ц─┌
-      let sendData = {
-        currentThreadName: this.currentThreadName,
-        summary: summary
-      };
-      console.info(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
-      SysTestKit.workerPort.postMessage(sendData);
-    }
-  }
-
-  incorrectFormat() {
-    if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
-      var value = this.coreContext.getDefaultService('config').filterValid;
-      var message = 'this param ' + value.join(',') + ' is invalid' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-
-  incorrectTestSuiteFormat() {
-    if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
-      let value = this.coreContext.getDefaultService('config').filterXdescribe;
-      let message = 'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-  async suiteStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let specArr = [];
-      this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
-      let message = '\n' + `${PrintTag.OHOS_REPORT_SUM}: ` + specArr.length;
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc() + '\n';
-      if (this.suiteService.currentRunningSuite.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
-    }
-  }
-
-  async suiteDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), currentRunningSuite, '');
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason;
-      }
-      const isPromiseError = currentRunningSuite.isPromiseError;
-      if (isPromiseError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + currentRunningSuite.duration;
-      if (currentRunningSuite.hookError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
-      }
-      message += '\n';
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
-    }
-  }
-
-  async specStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (++this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 1` + '\n';
-      if (this.specService.currentRunningSpec.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
-    }
-  }
-
-  async specDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      let messageStack = '';
-      let messageCode = '';
-      if (this.specService.currentRunningSpec.error) {
-        messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
-      } else if (this.specService.currentRunningSpec) {
-        if (this.specService.currentRunningSpec.fail) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
-        } else {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-          messageCode += this.specService.currentRunningSpec.isSkip ? (`${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n') : '';
-        }
-      } else {
-        messageCode += '\n';
-      }
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
-      if (SysTestKit.workerPort !== null) {
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      console.info(`\n${messageStack}`);
-      console.info(`\n${messageCode}`);
-      await SysTestKit.print(message);
-      await SysTestKit.print(messageStack);
-      await SysTestKit.print(messageCode);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specDone end print success`);
-    }
-  }
-}
-
-export default OhReport;
-б⌠ы▄D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\kit\SysTestKit.jsы√D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\coverage\coverageCollect.jsыD:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\Constant.jsы█D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\report\OhReport.jsтrB≤╠isLocalDependency╞isNodeEntryFile╖pkgPath╖pkgName╙pkgVersion╠belongProjectPath╠dependencyPkgInfo╗commonjsббыjD:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium╛@ohos/hypium╕1.0.24ы-D:\HMProject\CalculatorV0_1\graph-math-engineтrC▓╖pkgName╙pkgVersion╛@ohos/hypium╕1.0.24тrD▓╟hasDefaultExport╙isCommonJSцбцз-4/*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import SysTestKit from '../kit/SysTestKit';
-import { collectCoverageData } from '../coverage/coverageCollect';
-import { TAG, PrintTag } from '../../Constant';
-
-class OhReport {
-  constructor(attr) {
-    this.delegator = attr.delegator;
-    this.abilityDelegatorArguments = attr.abilityDelegatorArguments;
-    this.id = 'report';
-    this.index = 0;
-    this.duration = 0;
-    this.currentThreadName = 'mainThread';
-  }
-
-  init(coreContext) {
-    this.coreContext = coreContext;
-    this.suiteService = this.coreContext.getDefaultService('suite');
-    this.specService = this.coreContext.getDefaultService('spec');
-    if (SysTestKit.workerPort !== null) {
-      this.currentThreadName = SysTestKit.workerPort.name;
-    }
-  }
-
-  taskStart() {
-  }
-
-  async taskDone() {
-    let summary = this.suiteService.getSummary();
-    if (this.abilityDelegatorArguments !== null) {
-      this.taskDoneTime = new Date().getTime();
-      const configService = this.coreContext.getDefaultService('config');
-      const suiteService = this.coreContext.getDefaultService('suite');
-      const specService = this.coreContext.getDefaultService('spec');
-      if (configService['coverage'] === 'true') {
-        await collectCoverageData();
-      }
-      let message = '\n' + `${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ` + summary.total + ', Failure: ' + summary.failure;
-      message += ', Error: ' + summary.error;
-      message += ', Pass: ' + summary.pass;
-      message += ', Ignore: ' + summary.ignore;
-      if (specService.skipSpecNum > 0) {
-        message += ', SkipSpec: ' + specService.skipSpecNum;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_CODE}: ` + (summary.failure > 0 ? -1 : 0) + '\n';
-      let isHasError = summary.failure > 0 || summary.error > 0;
-      let config = this.coreContext.getDefaultService('config');
-      if (config.isBreakOnError() && isHasError) {
-        // Ф°╙Ф┴╖Х║▄Е┘╗И┐╗Х╞╢Ф≤▌
-        message += '\n' + `${PrintTag.OHOS_REPORT_RESULT}: breakOnError model, Stopping whole test suite if one specific test case failed or error` + '\n';
-      }
-      message += `${PrintTag.OHOS_REPORT_STATUS}: taskconsuming=` + summary.duration + '\n';
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-    }
-    if (SysTestKit.workerPort === null || SysTestKit.workerPort === undefined) {
-      // Д╦╩Г╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░ Г╩⌠Ф²÷Д╩╩Е┼║Ц─┌
-      console.info(`${TAG}report print success`);
-      this.delegator.finishTest('your test finished!!!', 0, () => { });
-    } else {
-      // workerГ╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░Е╟├Ф∙╟Ф█╝Е▐▒И─│Е┬╟Д╦╩Г╨©Г╗▀Д╦╜Ц─┌
-      let sendData = {
-        currentThreadName: this.currentThreadName,
-        summary: summary
-      };
-      console.info(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
-      SysTestKit.workerPort.postMessage(sendData);
-    }
-  }
-
-  incorrectFormat() {
-    if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
-      var value = this.coreContext.getDefaultService('config').filterValid;
-      var message = 'this param ' + value.join(',') + ' is invalid' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-
-  incorrectTestSuiteFormat() {
-    if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
-      let value = this.coreContext.getDefaultService('config').filterXdescribe;
-      let message = 'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-  async suiteStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let specArr = [];
-      this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
-      let message = '\n' + `${PrintTag.OHOS_REPORT_SUM}: ` + specArr.length;
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc() + '\n';
-      if (this.suiteService.currentRunningSuite.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
-    }
-  }
-
-  async suiteDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), currentRunningSuite, '');
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason;
-      }
-      const isPromiseError = currentRunningSuite.isPromiseError;
-      if (isPromiseError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + currentRunningSuite.duration;
-      if (currentRunningSuite.hookError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
-      }
-      message += '\n';
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
-    }
-  }
-
-  async specStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (++this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 1` + '\n';
-      if (this.specService.currentRunningSpec.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
-    }
-  }
-
-  async specDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      let messageStack = '';
-      let messageCode = '';
-      if (this.specService.currentRunningSpec.error) {
-        messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
-      } else if (this.specService.currentRunningSpec) {
-        if (this.specService.currentRunningSpec.fail) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
-        } else {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-          messageCode += this.specService.currentRunningSpec.isSkip ? (`${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n') : '';
-        }
-      } else {
-        messageCode += '\n';
-      }
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
-      if (SysTestKit.workerPort !== null) {
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      console.info(`\n${messageStack}`);
-      console.info(`\n${messageCode}`);
-      await SysTestKit.print(message);
-      await SysTestKit.print(messageStack);
-      await SysTestKit.print(messageCode);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specDone end print success`);
-    }
-  }
-}
-
-export default OhReport;
-тrE∙╖version╗mappings╔names╖sources╝sourcesContentэ з■■    ■  ■  ■  э 4■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3э D■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лCэ E■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лC■лD лDэ ,■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■■   ■ ■ ■ э 3■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■■   ■ ■ ■ э H■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лC■лD лD■лE лE■лF лF■лG лGэ F■  	 ■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■	 		■
- 	
-■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■ 	■  	 ■! 	!■" 	"■# 	#■$ 	$■% 	%■& 	&■' 	'■( 	(■) 	)■* 	*■+ 	+■, 	,■- 	-■. 	.■/ 	/■0 	0■1 	1■2 	2■3 	3■4 	4■5 	5■6 	6■7 	7■8 	8■9 	9■: 	:■; 	;■< 	<■= 	=■> 	>■? 	?■л@ 	л@■лA 	лA■лB 	лB■лC 	лC■лD 	лD■лE 	лEэ M■  
- ■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■	 
-	■
- 
-
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■ 
-■  
- ■! 
-!■" 
-"■# 
-#■$ 
-$■% 
-%■& 
-&■' 
-'■( 
-(■) 
-)■* 
-*■+ 
-+■, 
-,■- 
--■. 
-.■/ 
-/■0 
-0■1 
-1■2 
-2■3 
-3■4 
-4■5 
-5■6 
-6■7 
-7■8 
-8■9 
-9■: 
-:■; 
-;■< 
-<■= 
-=■> 
->■? 
-?■л@ 
-л@■лA 
-лA■лB 
-лB■лC 
-лC■лD 
-лD■лE 
-лE■лF 
-лF■лG 
-лG■лH 
-лH■лI 
-лI■лJ 
-лJ■лK 
-лK■лL 
-лLэ H■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лC■лD лD■лE лE■лF лF■лG лGэ #■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "∙■   ■ ■ ■ ■ ▓■   ■ э -■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,э D■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лCэ 1■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0▓■   ■ э ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ э ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ э &■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %э F■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лC■лD лD■лE лEэ ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ э ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ э ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ э ,■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +∙■   ■ ■ ■ ■ ▓■   ■ э ■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ э %■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $э F■   ■ ■ ■ ■ ■ ■ ■ ■ ■	 	■
- 
-■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■   ■! !■" "■# #■$ $■% %■& &■' '■( (■) )■* *■+ +■, ,■- -■. .■/ /■0 0■1 1■2 2■3 3■4 4■5 5■6 6■7 7■8 8■9 9■: :■; ;■< <■= =■> >■? ?■л@ л@■лA лA■лB лB■лC лC■лD лD■лE лEэ D■    ■  ■  ■  ■  ■  ■  ■  ■  ■	  	■
-  
-■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■  ■    ■!  !■"  "■#  #■$  $■%  %■&  &■'  '■(  (■)  )■*  *■+  +■,  ,■-  -■.  .■/  /■0  0■1  1■2  2■3  3■4  4■5  5■6  6■7  7■8  8■9  9■:  :■;  ;■<  <■=  =■>  >■?  ?■л@  л@■лA  лA■лB  лB■лC  лCэ +■  ! ■ !■ !■ !■ !■ !■ !■ !■ !■	 !	■
- !
-■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■ !■  ! ■! !!■" !"■# !#■$ !$■% !%■& !&■' !'■( !(■) !)■* !*э <■  " ■ "■ "■ "■ "■ "■ "■ "■ "■	 "	■
- "
-■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■ "■  " ■! "!■" ""■# "#■$ "$■% "%■& "&■' "'■( "(■) ")■* "*■+ "+■, ",■- "-■. ".■/ "/■0 "0■1 "1■2 "2■3 "3■4 "4■5 "5■6 "6■7 "7■8 "8■9 "9■: ":■; ";≈■  # ■ #■ #■ #■ #■ #■ #∙■  $ ■ $■ $■ $■ $▓■  % ■ %э ■  & ■ &■ &■ &■ &■ &■ &■ &■ &■	 &	■
- &
-■ &■ &■ &■ &■ &■ &∙■  ' ■ '■ '■ '■ '▓■  ( ■ (э ■  ) ■ )■ )■ )■ )■ )■ )■ )■ )■	 )	■
- )
-■ )■ )■ )■ )■ )■ )■ )■ )■ )■ )■ )э 3■  * ■ *■ *■ *■ *■ *■ *■ *■ *■	 *	■
- *
-■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■ *■  * ■! *!■" *"■# *#■$ *$■% *%■& *&■' *'■( *(■) *)■* **■+ *+■, *,■- *-■. *.■/ */■0 *0■1 *1■2 *2э 4■  + ■ +■ +■ +■ +■ +■ +■ +■ +■	 +	■
- +
-■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■ +■  + ■! +!■" +"■# +#■$ +$■% +%■& +&■' +'■( +(■) +)■* +*■+ ++■, +,■- +-■. +.■/ +/■0 +0■1 +1■2 +2■3 +3э 1■  , ■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■	 ,	■
- ,
-■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■ ,■  , ■! ,!■" ,"■# ,#■$ ,$■% ,%■& ,&■' ,'■( ,(■) ,)■* ,*■+ ,+■, ,,■- ,-■. ,.■/ ,/■0 ,0э K■  - ■ -■ -■ -■ -■ -■ -■ -■ -■	 -	■
- -
-■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■ -■  - ■! -!■" -"■# -#■$ -$■% -%■& -&■' -'■( -(■) -)■* -*■+ -+■, -,■- --■. -.■/ -/■0 -0■1 -1■2 -2■3 -3■4 -4■5 -5■6 -6■7 -7■8 -8■9 -9■: -:■; -;■< -<■= -=■> ->■? -?■л@ -л@■лA -лA■лB -лB■лC -лC■лD -лD■лE -лE■лF -лF■лG -лG■лH -лH■лI -лI■лJ -лJэ I■  . ■ .■ .■ .■ .■ .■ .■ .■ .■	 .	■
- .
-■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■ .■  . ■! .!■" ."■# .#■$ .$■% .%■& .&■' .'■( .(■) .)■* .*■+ .+■, .,■- .-■. ..■/ ./■0 .0■1 .1■2 .2■3 .3■4 .4■5 .5■6 .6■7 .7■8 .8■9 .9■: .:■; .;■< .<■= .=■> .>■? .?■л@ .л@■лA .лA■лB .лB■лC .лC■лD .лD■лE .лE■лF .лF■лG .лG■лH .лHэ G■  / ■ /■ /■ /■ /■ /■ /■ /■ /■	 /	■
- /
-■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■ /■  / ■! /!■" /"■# /#■$ /$■% /%■& /&■' /'■( /(■) /)■* /*■+ /+■, /,■- /-■. /.■/ //■0 /0■1 /1■2 /2■3 /3■4 /4■5 /5■6 /6■7 /7■8 /8■9 /9■: /:■; /;■< /<■= /=■> />■? /?■л@ /л@■лA /лA■лB /лB■лC /лC■лD /лD■лE /лE■лF /лFэ 3■  0 ■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■	 0	■
- 0
-■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■ 0■  0 ■! 0!■" 0"■# 0#■$ 0$■% 0%■& 0&■' 0'■( 0(■) 0)■* 0*■+ 0+■, 0,■- 0-■. 0.■/ 0/■0 00■1 01■2 02э &■  1 ■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■	 1	■
- 1
-■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■ 1■  1 ■! 1!■" 1"■# 1#■$ 1$■% 1%≥■  2 ■ 2■ 2■ 2■ 2■ 2■ 2■ 2■ 2э └■  3 ■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■	 3	■
- 3
-■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■ 3■  3 ■! 3!■" 3"■# 3#■$ 3$■% 3%■& 3&■' 3'■( 3(■) 3)■* 3*■+ 3+■, 3,■- 3-■. 3.■/ 3/■0 30■1 31■2 32■3 33■4 34■5 35■6 36■7 37■8 38■9 39■: 3:■; 3;■< 3<■= 3=■> 3>■? 3?■л@ 3л@■лA 3лA■лB 3лB■лC 3лC■лD 3лD■лE 3лE■лF 3лF■лG 3лG■лH 3лH■лI 3лI■лJ 3лJ■лK 3лK■лL 3лL■лM 3лM■лN 3лN■лO 3лO■лP 3лP■лQ 3лQ■лR 3лR■лS 3лS■лT 3лT■лU 3лU■лV 3лV■лW 3лW■лX 3лX■лY 3лY■лZ 3лZ■л[ 3л[■л\ 3л\■л] 3л]■л^ 3л^■л_ 3л_■л` 3л`■лa 3лa■лb 3лb■лc 3лc■лd 3лd■лe 3лe■лf 3лf■лg 3лg■лh 3лh■лi 3лi■лj 3лj■лk 3лk■лl 3лl■лm 3лm■лn 3лn■лo 3лo■лp 3лp■лq 3лq■лr 3лr■лs 3лs■лt 3лt■лu 3лu■лv 3лv■лw 3лw■лx 3лx■лy 3лy■лz 3лz■л{ 3л{■л| 3л|■л} 3л}■л~ 3л~■л 3л■л─ 3л─■л│ 3л│■л┌ 3л┌■л┐ 3л┐э /■  4 ■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■	 4	■
- 4
-■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■ 4■  4 ■! 4!■" 4"■# 4#■$ 4$■% 4%■& 4&■' 4'■( 4(■) 4)■* 4*■+ 4+■, 4,■- 4-■. 4.э -■  5 ■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■	 5	■
- 5
-■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■ 5■  5 ■! 5!■" 5"■# 5#■$ 5$■% 5%■& 5&■' 5'■( 5(■) 5)■* 5*■+ 5+■, 5,э 1■  6 ■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■	 6	■
- 6
-■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■ 6■  6 ■! 6!■" 6"■# 6#■$ 6$■% 6%■& 6&■' 6'■( 6(■) 6)■* 6*■+ 6+■, 6,■- 6-■. 6.■/ 6/■0 60э *■  7 ■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■	 7	■
- 7
-■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■ 7■  7 ■! 7!■" 7"■# 7#■$ 7$■% 7%■& 7&■' 7'■( 7(■) 7)э >■  8 ■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■	 8	■
- 8
-■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■ 8■  8 ■! 8!■" 8"■# 8#■$ 8$■% 8%■& 8&■' 8'■( 8(■) 8)■* 8*■+ 8+■, 8,■- 8-■. 8.■/ 8/■0 80■1 81■2 82■3 83■4 84■5 85■6 86■7 87■8 88■9 89■: 8:■; 8;■< 8<■= 8=≥■  9 ■ 9■ 9■ 9■ 9■ 9■ 9■ 9■ 9э c■  : ■ :■ :■ :■ :■ :■ :■ :■ :■	 :	■
- :
-■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■ :■  : ■! :!■" :"■# :#■$ :$■% :%■& :&■' :'■( :(■) :)■* :*■+ :+■, :,■- :-■. :.■/ :/■0 :0■1 :1■2 :2■3 :3■4 :4■5 :5■6 :6■7 :7■8 :8■9 :9■: ::■; :;■< :<■= :=■> :>■? :?■л@ :л@■лA :лA■лB :лB■лC :лC■лD :лD■лE :лE■лF :лF■лG :лG■лH :лH■лI :лI■лJ :лJ■лK :лK■лL :лL■лM :лM■лN :лN■лO :лO■лP :лP■лQ :лQ■лR :лR■лS :лS■лT :лT■лU :лU■лV :лV■лW :лW■лX :лX■лY :лY■лZ :лZ■л[ :л[■л\ :л\■л] :л]■л^ :л^■л_ :л_■л` :л`■лa :лa■лb :лbэ B■  ; ■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■	 ;	■
- ;
-■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■ ;■  ; ■! ;!■" ;"■# ;#■$ ;$■% ;%■& ;&■' ;'■( ;(■) ;)■* ;*■+ ;+■, ;,■- ;-■. ;.■/ ;/■0 ;0■1 ;1■2 ;2■3 ;3■4 ;4■5 ;5■6 ;6■7 ;7■8 ;8■9 ;9■: ;:■; ;;■< ;<■= ;=■> ;>■? ;?■л@ ;л@■лA ;лAэ B■  < ■ <■ <■ <■ <■ <■ <■ <■ <■	 <	■
- <
-■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■ <■  < ■! <!■" <"■# <#■$ <$■% <%■& <&■' <'■( <(■) <)■* <*■+ <+■, <,■- <-■. <.■/ </■0 <0■1 <1■2 <2■3 <3■4 <4■5 <5■6 <6■7 <7■8 <8■9 <9■: <:■; <;■< <<■= <=■> <>■? <?■л@ <л@■лA <лAэ 4■  = ■ =■ =■ =■ =■ =■ =■ =■ =■	 =	■
- =
-■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■ =■  = ■! =!■" ="■# =#■$ =$■% =%■& =&■' ='■( =(■) =)■* =*■+ =+■, =,■- =-■. =.■/ =/■0 =0■1 =1■2 =2■3 =3э ■  > ■ >■ >■ >■ >■ >■ >■ >■ >■	 >	■
- >
-■ >■ >■ >■ >■ >■ >■ >■ >■ >э ²■  ? ■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■	 ?	■
- ?
-■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■ ?■  ? ■! ?!■" ?"■# ?#■$ ?$■% ?%■& ?&■' ?'■( ?(■) ?)■* ?*■+ ?+■, ?,■- ?-■. ?.■/ ?/■0 ?0■1 ?1■2 ?2■3 ?3■4 ?4■5 ?5■6 ?6■7 ?7■8 ?8■9 ?9■: ?:■; ?;■< ?<■= ?=■> ?>■? ??■л@ ?л@■лA ?лA■лB ?лB■лC ?лC■лD ?лD■лE ?лE■лF ?лF■лG ?лG■лH ?лH■лI ?лI■лJ ?лJ■лK ?лK■лL ?лL■лM ?лM■лN ?лN■лO ?лO■лP ?лP■лQ ?лQ■лR ?лR■лS ?лS■лT ?лT■лU ?лU■лV ?лV■лW ?лW■лX ?лX■лY ?лY■лZ ?лZ■л[ ?л[■л\ ?л\■л] ?л]■л^ ?л^■л_ ?л_■л` ?л`■лa ?лa■лb ?лb■лc ?лc■лd ?лd■лe ?лe■лf ?лf■лg ?лg■лh ?лh■лi ?лi■лj ?лj■лk ?лk■лl ?лl■лm ?лm■лn ?лn■лo ?лo■лp ?лp■лq ?лq■лr ?лr■лs ?лs■лt ?лt■лu ?лu■лv ?лv■лw ?лw■лx ?лx■лy ?лy■лz ?лz■л{ ?л{■л| ?л|■л} ?л}■л~ ?л~■л ?л■л─ ?л─■л│ ?л│■л┌ ?л┌■л┐ ?л┐■л└ ?л└■л┘ ?л┘■л├ ?л├■л┤ ?л┤■л┬ ?л┬■л┴ ?л┴■л┼ ?л┼■л▀ ?л▀■л▄ ?л▄■л█ ?л█■л▌ ?л▌■л▐ ?л▐■л░ ?л░■л▒ ?л▒■л▓ ?л▓■л⌠ ?л⌠■л■ ?л■■л∙ ?л∙■л√ ?л√■л≈ ?л≈■л≤ ?л≤■л≥ ?л≥■л  ?л ■л⌡ ?л⌡■л° ?л°≥■  л@ ■ л@■ л@■ л@■ л@■ л@■ л@■ л@■ л@э ^■  лA ■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■	 лA	■
- лA
-■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■ лA■  лA ■! лA!■" лA"■# лA#■$ лA$■% лA%■& лA&■' лA'■( лA(■) лA)■* лA*■+ лA+■, лA,■- лA-■. лA.■/ лA/■0 лA0■1 лA1■2 лA2■3 лA3■4 лA4■5 лA5■6 лA6■7 лA7■8 лA8■9 лA9■: лA:■; лA;■< лA<■= лA=■> лA>■? лA?■л@ лAл@■лA лAлA■лB лAлB■лC лAлC■лD лAлD■лE лAлE■лF лAлF■лG лAлG■лH лAлH■лI лAлI■лJ лAлJ■лK лAлK■лL лAлL■лM лAлM■лN лAлN■лO лAлO■лP лAлP■лQ лAлQ■лR лAлR■лS лAлS■лT лAлT■лU лAлU■лV лAлV■лW лAлW■лX лAлX■лY лAлY■лZ лAлZ■л[ лAл[■л\ лAл\■л] лAл]э #■  лB ■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■	 лB	■
- лB
-■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■ лB■  лB ■! лB!■" лB"э (■  лC ■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■	 лC	■
- лC
-■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■ лC■  лC ■! лC!■" лC"■# лC#■$ лC$■% лC%■& лC&■' лC'≈■  лD ■ лD■ лD■ лD■ лD■ лD■ лDэ R■  лE ■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■	 лE	■
- лE
-■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■ лE■  лE ■! лE!■" лE"■# лE#■$ лE$■% лE%■& лE&■' лE'■( лE(■) лE)■* лE*■+ лE+■, лE,■- лE-■. лE.■/ лE/■0 лE0■1 лE1■2 лE2■3 лE3■4 лE4■5 лE5■6 лE6■7 лE7■8 лE8■9 лE9■: лE:■; лE;■< лE<■= лE=■> лE>■? лE?■л@ лEл@■лA лEлA■лB лEлB■лC лEлC■лD лEлD■лE лEлE■лF лEлF■лG лEлG■лH лEлH■лI лEлI■лJ лEлJ■лK лEлK■лL лEлL■лM лEлM■лN лEлN■лO лEлO■лP лEлP■лQ лEлQэ ■  лF ■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■	 лF	■
- лF
-■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лF■ лFэ 3■  лG ■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■	 лG	■
- лG
-■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■ лG■  лG ■! лG!■" лG"■# лG#■$ лG$■% лG%■& лG&■' лG'■( лG(■) лG)■* лG*■+ лG+■, лG,■- лG-■. лG.■/ лG/■0 лG0■1 лG1■2 лG2э I■  лH ■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■	 лH	■
- лH
-■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■ лH■  лH ■! лH!■" лH"■# лH#■$ лH$■% лH%■& лH&■' лH'■( лH(■) лH)■* лH*■+ лH+■, лH,■- лH-■. лH.■/ лH/■0 лH0■1 лH1■2 лH2■3 лH3■4 лH4■5 лH5■6 лH6■7 лH7■8 лH8■9 лH9■: лH:■; лH;■< лH<■= лH=■> лH>■? лH?■л@ лHл@■лA лHлA■лB лHлB■лC лHлC■лD лHлD■лE лHлE■лF лHлF■лG лHлG■лH лHлH·■  лI ■ лI■ лI■ лI■ лI■ лI■ лI■ лI■ лI■	 лI	■
- лI
-■ лI■ лI■ лIэ "■  лJ ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■	 лJ	■
- лJ
-■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■ лJ■  лJ ■! лJ!э ■  лK ■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■	 лK	■
- лK
-■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лK■ лKэ 4■  лL ■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■	 лL	■
- лL
-■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■ лL■  лL ■! лL!■" лL"■# лL#■$ лL$■% лL%■& лL&■' лL'■( лL(■) лL)■* лL*■+ лL+■, лL,■- лL-■. лL.■/ лL/■0 лL0■1 лL1■2 лL2■3 лL3э ■  лM ■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■	 лM	■
- лM
-■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM■ лM ■  лN ■ лN■ лN■ лN■ лN■ лN■ лN■ лN■ лN■	 лN	э p■  лO ■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■	 лO	■
- лO
-■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■ лO■  лO ■! лO!■" лO"■# лO#■$ лO$■% лO%■& лO&■' лO'■( лO(■) лO)■* лO*■+ лO+■, лO,■- лO-■. лO.■/ лO/■0 лO0■1 лO1■2 лO2■3 лO3■4 лO4■5 лO5■6 лO6■7 лO7■8 лO8■9 лO9■: лO:■; лO;■< лO<■= лO=■> лO>■? лO?■л@ лOл@■лA лOлA■лB лOлB■лC лOлC■лD лOлD■лE лOлE■лF лOлF■лG лOлG■лH лOлH■лI лOлI■лJ лOлJ■лK лOлK■лL лOлL■лM лOлM■лN лOлN■лO лOлO■лP лOлP■лQ лOлQ■лR лOлR■лS лOлS■лT лOлT■лU лOлU■лV лOлV■лW лOлW■лX лOлX■лY лOлY■лZ лOлZ■л[ лOл[■л\ лOл\■л] лOл]■л^ лOл^■л_ лOл_■л` лOл`■лa лOлa■лb лOлb■лc лOлc■лd лOлd■лe лOлe■лf лOлf■лg лOлg■лh лOлh■лi лOлi■лj лOлj■лk лOлk■лl лOлl■лm лOлm■лn лOлn■лo лOлoэ 4■  лP ■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■	 лP	■
- лP
-■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■ лP■  лP ■! лP!■" лP"■# лP#■$ лP$■% лP%■& лP&■' лP'■( лP(■) лP)■* лP*■+ лP+■, лP,■- лP-■. лP.■/ лP/■0 лP0■1 лP1■2 лP2■3 лP3≈■  лQ ■ лQ■ лQ■ лQ■ лQ■ лQ■ лQ∙■  лR ■ лR■ лR■ лR■ лR▓■  лS ■ лSэ ■  лT ■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лT■	 лT	■
- лT
-■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лT■ лTэ R■  лU ■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■	 лU	■
- лU
-■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■ лU■  лU ■! лU!■" лU"■# лU#■$ лU$■% лU%■& лU&■' лU'■( лU(■) лU)■* лU*■+ лU+■, лU,■- лU-■. лU.■/ лU/■0 лU0■1 лU1■2 лU2■3 лU3■4 лU4■5 лU5■6 лU6■7 лU7■8 лU8■9 лU9■: лU:■; лU;■< лU<■= лU=■> лU>■? лU?■л@ лUл@■лA лUлA■лB лUлB■лC лUлC■лD лUлD■лE лUлE■лF лUлF■лG лUлG■лH лUлH■лI лUлI■лJ лUлJ■лK лUлK■лL лUлL■лM лUлM■лN лUлN■лO лUлO■лP лUлP■лQ лUлQэ M■  лV ■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■	 лV	■
- лV
-■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■ лV■  лV ■! лV!■" лV"■# лV#■$ лV$■% лV%■& лV&■' лV'■( лV(■) лV)■* лV*■+ лV+■, лV,■- лV-■. лV.■/ лV/■0 лV0■1 лV1■2 лV2■3 лV3■4 лV4■5 лV5■6 лV6■7 лV7■8 лV8■9 лV9■: лV:■; лV;■< лV<■= лV=■> лV>■? лV?■л@ лVл@■лA лVлA■лB лVлB■лC лVлC■лD лVлD■лE лVлE■лF лVлF■лG лVлG■лH лVлH■лI лVлI■лJ лVлJ■лK лVлK■лL лVлLэ M■  лW ■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■	 лW	■
- лW
-■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■ лW■  лW ■! лW!■" лW"■# лW#■$ лW$■% лW%■& лW&■' лW'■( лW(■) лW)■* лW*■+ лW+■, лW,■- лW-■. лW.■/ лW/■0 лW0■1 лW1■2 лW2■3 лW3■4 лW4■5 лW5■6 лW6■7 лW7■8 лW8■9 лW9■: лW:■; лW;■< лW<■= лW=■> лW>■? лW?■л@ лWл@■лA лWлA■лB лWлB■лC лWлC■лD лWлD■лE лWлE■лF лWлF■лG лWлG■лH лWлH■лI лWлI■лJ лWлJ■лK лWлK■лL лWлLэ 5■  лX ■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■	 лX	■
- лX
-■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■ лX■  лX ■! лX!■" лX"■# лX#■$ лX$■% лX%■& лX&■' лX'■( лX(■) лX)■* лX*■+ лX+■, лX,■- лX-■. лX.■/ лX/■0 лX0■1 лX1■2 лX2■3 лX3■4 лX4⌡■  лY ■ лY■ лY■ лY■ лY■ лY■ лY■ лY■ лY■	 лY	■
- лY
-≈■  лZ ■ лZ■ лZ■ лZ■ лZ■ лZ■ лZ∙■  л[ ■ л[■ л[■ л[■ л[▓■  л\ ■ л\э  ■  л] ■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■	 л]	■
- л]
-■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]■ л]э V■  л^ ■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■	 л^	■
- л^
-■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■ л^■  л^ ■! л^!■" л^"■# л^#■$ л^$■% л^%■& л^&■' л^'■( л^(■) л^)■* л^*■+ л^+■, л^,■- л^-■. л^.■/ л^/■0 л^0■1 л^1■2 л^2■3 л^3■4 л^4■5 л^5■6 л^6■7 л^7■8 л^8■9 л^9■: л^:■; л^;■< л^<■= л^=■> л^>■? л^?■л@ л^л@■лA л^лA■лB л^лB■лC л^лC■лD л^лD■лE л^лE■лF л^лF■лG л^лG■лH л^лH■лI л^лI■лJ л^лJ■лK л^лK■лL л^лL■лM л^лM■лN л^лN■лO л^лO■лP л^лP■лQ л^лQ■лR л^лR■лS л^лS■лT л^лT■лU л^лUэ Q■  л_ ■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■	 л_	■
- л_
-■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■ л_■  л_ ■! л_!■" л_"■# л_#■$ л_$■% л_%■& л_&■' л_'■( л_(■) л_)■* л_*■+ л_+■, л_,■- л_-■. л_.■/ л_/■0 л_0■1 л_1■2 л_2■3 л_3■4 л_4■5 л_5■6 л_6■7 л_7■8 л_8■9 л_9■: л_:■; л_;■< л_<■= л_=■> л_>■? л_?■л@ л_л@■лA л_лA■лB л_лB■лC л_лC■лD л_лD■лE л_лE■лF л_лF■лG л_лG■лH л_лH■лI л_лI■лJ л_лJ■лK л_лK■лL л_лL■лM л_лM■лN л_лN■лO л_лO■лP л_лPэ W■  л` ■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■	 л`	■
- л`
-■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■ л`■  л` ■! л`!■" л`"■# л`#■$ л`$■% л`%■& л`&■' л`'■( л`(■) л`)■* л`*■+ л`+■, л`,■- л`-■. л`.■/ л`/■0 л`0■1 л`1■2 л`2■3 л`3■4 л`4■5 л`5■6 л`6■7 л`7■8 л`8■9 л`9■: л`:■; л`;■< л`<■= л`=■> л`>■? л`?■л@ л`л@■лA л`лA■лB л`лB■лC л`лC■лD л`лD■лE л`лE■лF л`лF■лG л`лG■лH л`лH■лI л`лI■лJ л`лJ■лK л`лK■лL л`лL■лM л`лM■лN л`лN■лO л`лO■лP л`лP■лQ л`лQ■лR л`лR■лS л`лS■лT л`лT■лU л`лU■лV л`лVэ 5■  лa ■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■	 лa	■
- лa
-■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■ лa■  лa ■! лa!■" лa"■# лa#■$ лa$■% лa%■& лa&■' лa'■( лa(■) лa)■* лa*■+ лa+■, лa,■- лa-■. лa.■/ лa/■0 лa0■1 лa1■2 лa2■3 лa3■4 лa4⌡■  лb ■ лb■ лb■ лb■ лb■ лb■ лb■ лb■ лb■	 лb	■
- лb
-≈■  лc ■ лc■ лc■ лc■ лc■ лc■ лc∙■  лd ■ лd■ лd■ лd■ лdэ ■  лe ■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■	 лe	■
- лe
-■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лe■ лeэ 4■  лf ■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■	 лf	■
- лf
-■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■ лf■  лf ■! лf!■" лf"■# лf#■$ лf$■% лf%■& лf&■' лf'■( лf(■) лf)■* лf*■+ лf+■, лf,■- лf-■. лf.■/ лf/■0 лf0■1 лf1■2 лf2■3 лf3э ■  лg ■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■	 лg	■
- лg
-■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лg■ лgэ c■  лh ■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■	 лh	■
- лh
-■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■ лh■  лh ■! лh!■" лh"■# лh#■$ лh$■% лh%■& лh&■' лh'■( лh(■) лh)■* лh*■+ лh+■, лh,■- лh-■. лh.■/ лh/■0 лh0■1 лh1■2 лh2■3 лh3■4 лh4■5 лh5■6 лh6■7 лh7■8 лh8■9 лh9■: лh:■; лh;■< лh<■= лh=■> лh>■? лh?■л@ лhл@■лA лhлA■лB лhлB■лC лhлC■лD лhлD■лE лhлE■лF лhлF■лG лhлG■лH лhлH■лI лhлI■лJ лhлJ■лK лhлK■лL лhлL■лM лhлM■лN лhлN■лO лhлO■лP лhлP■лQ лhлQ■лR лhлR■лS лhлS■лT лhлT■лU лhлU■лV лhлV■лW лhлW■лX лhлX■лY лhлY■лZ лhлZ■л[ лhл[■л\ лhл\■л] лhл]■л^ лhл^■л_ лhл_■л` лhл`■лa лhлa■лb лhлbэ N■  лi ■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■	 лi	■
- лi
-■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■ лi■  лi ■! лi!■" лi"■# лi#■$ лi$■% лi%■& лi&■' лi'■( лi(■) лi)■* лi*■+ лi+■, лi,■- лi-■. лi.■/ лi/■0 лi0■1 лi1■2 лi2■3 лi3■4 лi4■5 лi5■6 лi6■7 лi7■8 лi8■9 лi9■: лi:■; лi;■< лi<■= лi=■> лi>■? лi?■л@ лiл@■лA лiлA■лB лiлB■лC лiлC■лD лiлD■лE лiлE■лF лiлF■лG лiлG■лH лiлH■лI лiлI■лJ лiлJ■лK лiлK■лL лiлL■лM лiлMэ ┤■  лj ■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■	 лj	■
- лj
-■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■ лj■  лj ■! лj!■" лj"■# лj#■$ лj$■% лj%■& лj&■' лj'■( лj(■) лj)■* лj*■+ лj+■, лj,■- лj-■. лj.■/ лj/■0 лj0■1 лj1■2 лj2■3 лj3■4 лj4■5 лj5■6 лj6■7 лj7■8 лj8■9 лj9■: лj:■; лj;■< лj<■= лj=■> лj>■? лj?■л@ лjл@■лA лjлA■лB лjлB■лC лjлC■лD лjлD■лE лjлE■лF лjлF■лG лjлG■лH лjлH■лI лjлI■лJ лjлJ■лK лjлK■лL лjлL■лM лjлM■лN лjлN■лO лjлO■лP лjлP■лQ лjлQ■лR лjлR■лS лjлS■лT лjлT■лU лjлU■лV лjлV■лW лjлW■лX лjлX■лY лjлY■лZ лjлZ■л[ лjл[■л\ лjл\■л] лjл]■л^ лjл^■л_ лjл_■л` лjл`■лa лjлa■лb лjлb■лc лjлc■лd лjлd■лe лjлe■лf лjлf■лg лjлg■лh лjлh■лi лjлi■лj лjлj■лk лjлk■лl лjлl■лm лjлm■лn лjлn■лo лjлo■лp лjлp■лq лjлq■лr лjлr■лs лjлs■лt лjлt■лu лjлu■лv лjлv■лw лjлw■лx лjлx■лy лjлy■лz лjлz■л{ лjл{■л| лjл|■л} лjл}■л~ лjл~■л лjл■л─ лjл─■л│ лjл│■л┌ лjл┌■л┐ лjл┐■л└ лjл└■л┘ лjл┘■л├ лjл├э {■  лk ■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■	 лk	■
- лk
-■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■ лk■  лk ■! лk!■" лk"■# лk#■$ лk$■% лk%■& лk&■' лk'■( лk(■) лk)■* лk*■+ лk+■, лk,■- лk-■. лk.■/ лk/■0 лk0■1 лk1■2 лk2■3 лk3■4 лk4■5 лk5■6 лk6■7 лk7■8 лk8■9 лk9■: лk:■; лk;■< лk<■= лk=■> лk>■? лk?■л@ лkл@■лA лkлA■лB лkлB■лC лkлC■лD лkлD■лE лkлE■лF лkлF■лG лkлG■лH лkлH■лI лkлI■лJ лkлJ■лK лkлK■лL лkлL■лM лkлM■лN лkлN■лO лkлO■лP лkлP■лQ лkлQ■лR лkлR■лS лkлS■лT лkлT■лU лkлU■лV лkлV■лW лkлW■лX лkлX■лY лkлY■лZ лkлZ■л[ лkл[■л\ лkл\■л] лkл]■л^ лkл^■л_ лkл_■л` лkл`■лa лkлa■лb лkлb■лc лkлc■лd лkлd■лe лkлe■лf лkлf■лg лkлg■лh лkлh■лi лkлi■лj лkлj■лk лkлk■лl лkлl■лm лkлm■лn лkлn■лo лkлo■лp лkлp■лq лkлq■лr лkлr■лs лkлs■лt лkлt■лu лkлu■лv лkлv■лw лkлw■лx лkлx■лy лkлy■лz лkлzэ ;■  лl ■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■	 лl	■
- лl
-■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■ лl■  лl ■! лl!■" лl"■# лl#■$ лl$■% лl%■& лl&■' лl'■( лl(■) лl)■* лl*■+ лl+■, лl,■- лl-■. лl.■/ лl/■0 лl0■1 лl1■2 лl2■3 лl3■4 лl4■5 лl5■6 лl6■7 лl7■8 лl8■9 лl9■: лl:э }■  лm ■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■	 лm	■
- лm
-■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■ лm■  лm ■! лm!■" лm"■# лm#■$ лm$■% лm%■& лm&■' лm'■( лm(■) лm)■* лm*■+ лm+■, лm,■- лm-■. лm.■/ лm/■0 лm0■1 лm1■2 лm2■3 лm3■4 лm4■5 лm5■6 лm6■7 лm7■8 лm8■9 лm9■: лm:■; лm;■< лm<■= лm=■> лm>■? лm?■л@ лmл@■лA лmлA■лB лmлB■лC лmлC■лD лmлD■лE лmлE■лF лmлF■лG лmлG■лH лmлH■лI лmлI■лJ лmлJ■лK лmлK■лL лmлL■лM лmлM■лN лmлN■лO лmлO■лP лmлP■лQ лmлQ■лR лmлR■лS лmлS■лT лmлT■лU лmлU■лV лmлV■лW лmлW■лX лmлX■лY лmлY■лZ лmлZ■л[ лmл[■л\ лmл\■л] лmл]■л^ лmл^■л_ лmл_■л` лmл`■лa лmлa■лb лmлb■лc лmлc■лd лmлd■лe лmлe■лf лmлf■лg лmлg■лh лmлh■лi лmлi■лj лmлj■лk лmлk■лl лmлl■лm лmлm■лn лmлn■лo лmлo■лp лmлp■лq лmлq■лr лmлr■лs лmлs■лt лmлt■лu лmлu■лv лmлv■лw лmлw■лx лmлx■лy лmлy■лz лmлz■л{ лmл{■л| лmл|≥■  лn ■ лn■ лn■ лn■ лn■ лn■ лn■ лn■ лnэ -■  лo ■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■	 лo	■
- лo
-■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■ лo■  лo ■! лo!■" лo"■# лo#■$ лo$■% лo%■& лo&■' лo'■( лo(■) лo)■* лo*■+ лo+■, лo,э c■  лp ■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■	 лp	■
- лp
-■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■ лp■  лp ■! лp!■" лp"■# лp#■$ лp$■% лp%■& лp&■' лp'■( лp(■) лp)■* лp*■+ лp+■, лp,■- лp-■. лp.■/ лp/■0 лp0■1 лp1■2 лp2■3 лp3■4 лp4■5 лp5■6 лp6■7 лp7■8 лp8■9 лp9■: лp:■; лp;■< лp<■= лp=■> лp>■? лp?■л@ лpл@■лA лpлA■лB лpлB■лC лpлC■лD лpлD■лE лpлE■лF лpлF■лG лpлG■лH лpлH■лI лpлI■лJ лpлJ■лK лpлK■лL лpлL■лM лpлM■лN лpлN■лO лpлO■лP лpлP■лQ лpлQ■лR лpлR■лS лpлS■лT лpлT■лU лpлU■лV лpлV■лW лpлW■лX лpлX■лY лpлY■лZ лpлZ■л[ лpл[■л\ лpл\■л] лpл]■л^ лpл^■л_ лpл_■л` лpл`■лa лpлa■лb лpлb≥■  лq ■ лq■ лq■ лq■ лq■ лq■ лq■ лq■ лqэ #■  лr ■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■	 лr	■
- лr
-■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■ лr■  лr ■! лr!■" лr"э (■  лs ■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■	 лs	■
- лs
-■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■ лs■  лs ■! лs!■" лs"■# лs#■$ лs$■% лs%■& лs&■' лs'э q■  лt ■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■	 лt	■
- лt
-■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■ лt■  лt ■! лt!■" лt"■# лt#■$ лt$■% лt%■& лt&■' лt'■( лt(■) лt)■* лt*■+ лt+■, лt,■- лt-■. лt.■/ лt/■0 лt0■1 лt1■2 лt2■3 лt3■4 лt4■5 лt5■6 лt6■7 лt7■8 лt8■9 лt9■: лt:■; лt;■< лt<■= лt=■> лt>■? лt?■л@ лtл@■лA лtлA■лB лtлB■лC лtлC■лD лtлD■лE лtлE■лF лtлF■лG лtлG■лH лtлH■лI лtлI■лJ лtлJ■лK лtлK■лL лtлL■лM лtлM■лN лtлN■лO лtлO■лP лtлP■лQ лtлQ■лR лtлR■лS лtлS■лT лtлT■лU лtлU■лV лtлV■лW лtлW■лX лtлX■лY лtлY■лZ лtлZ■л[ лtл[■л\ лtл\■л] лtл]■л^ лtл^■л_ лtл_■л` лtл`■лa лtлa■лb лtлb■лc лtлc■лd лtлd■лe лtлe■лf лtлf■лg лtлg■лh лtлh■лi лtлi■лj лtлj■лk лtлk■лl лtлl■лm лtлm■лn лtлn■лo лtлo■лp лtлp≈■  лu ■ лu■ лu■ лu■ лu■ лu■ лu∙■  лv ■ лv■ лv■ лv■ лv▓■  лw ■ лwэ ■  лx ■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лx■	 лx	■
- лx
-■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лx■ лxэ 4■  лy ■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■	 лy	■
- лy
-■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■ лy■  лy ■! лy!■" лy"■# лy#■$ лy$■% лy%■& лy&■' лy'■( лy(■) лy)■* лy*■+ лy+■, лy,■- лy-■. лy.■/ лy/■0 лy0■1 лy1■2 лy2■3 лy3э O■  лz ■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■	 лz	■
- лz
-■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■ лz■  лz ■! лz!■" лz"■# лz#■$ лz$■% лz%■& лz&■' лz'■( лz(■) лz)■* лz*■+ лz+■, лz,■- лz-■. лz.■/ лz/■0 лz0■1 лz1■2 лz2■3 лz3■4 лz4■5 лz5■6 лz6■7 лz7■8 лz8■9 лz9■: лz:■; лz;■< лz<■= лz=■> лz>■? лz?■л@ лzл@■лA лzлA■лB лzлB■лC лzлC■лD лzлD■лE лzлE■лF лzлF■лG лzлG■лH лzлH■лI лzлI■лJ лzлJ■лK лzлK■лL лzлL■лM лzлM■лN лzлNэ p■  л{ ■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■	 л{	■
- л{
-■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■ л{■  л{ ■! л{!■" л{"■# л{#■$ л{$■% л{%■& л{&■' л{'■( л{(■) л{)■* л{*■+ л{+■, л{,■- л{-■. л{.■/ л{/■0 л{0■1 л{1■2 л{2■3 л{3■4 л{4■5 л{5■6 л{6■7 л{7■8 л{8■9 л{9■: л{:■; л{;■< л{<■= л{=■> л{>■? л{?■л@ л{л@■лA л{лA■лB л{лB■лC л{лC■лD л{лD■лE л{лE■лF л{лF■лG л{лG■лH л{лH■лI л{лI■лJ л{лJ■лK л{лK■лL л{лL■лM л{лM■лN л{лN■лO л{лO■лP л{лP■лQ л{лQ■лR л{лR■лS л{лS■лT л{лT■лU л{лU■лV л{лV■лW л{лW■лX л{лX■лY л{лY■лZ л{лZ■л[ л{л[■л\ л{л\■л] л{л]■л^ л{л^■л_ л{л_■л` л{л`■лa л{лa■лb л{лb■лc л{лc■лd л{лd■лe л{лe■лf л{лf■лg л{лg■лh л{лh■лi л{лi■лj л{лj■лk л{лk■лl л{лl■лm л{лm■лn л{лn■лo л{лoэ w■  л| ■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■	 л|	■
- л|
-■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■ л|■  л| ■! л|!■" л|"■# л|#■$ л|$■% л|%■& л|&■' л|'■( л|(■) л|)■* л|*■+ л|+■, л|,■- л|-■. л|.■/ л|/■0 л|0■1 л|1■2 л|2■3 л|3■4 л|4■5 л|5■6 л|6■7 л|7■8 л|8■9 л|9■: л|:■; л|;■< л|<■= л|=■> л|>■? л|?■л@ л|л@■лA л|лA■лB л|лB■лC л|лC■лD л|лD■лE л|лE■лF л|лF■лG л|лG■лH л|лH■лI л|лI■лJ л|лJ■лK л|лK■лL л|лL■лM л|лM■лN л|лN■лO л|лO■лP л|лP■лQ л|лQ■лR л|лR■лS л|лS■лT л|лT■лU л|лU■лV л|лV■лW л|лW■лX л|лX■лY л|лY■лZ л|лZ■л[ л|л[■л\ л|л\■л] л|л]■л^ л|л^■л_ л|л_■л` л|л`■лa л|лa■лb л|лb■лc л|лc■лd л|лd■лe л|лe■лf л|лf■лg л|лg■лh л|лh■лi л|лi■лj л|лj■лk л|лk■лl л|лl■лm л|лm■лn л|лn■лo л|лo■лp л|лp■лq л|лq■лr л|лr■лs л|лs■лt л|лt■лu л|лu■лv л|лvэ v■  л} ■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■	 л}	■
- л}
-■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■ л}■  л} ■! л}!■" л}"■# л}#■$ л}$■% л}%■& л}&■' л}'■( л}(■) л})■* л}*■+ л}+■, л},■- л}-■. л}.■/ л}/■0 л}0■1 л}1■2 л}2■3 л}3■4 л}4■5 л}5■6 л}6■7 л}7■8 л}8■9 л}9■: л}:■; л};■< л}<■= л}=■> л}>■? л}?■л@ л}л@■лA л}лA■лB л}лB■лC л}лC■лD л}лD■лE л}лE■лF л}лF■лG л}лG■лH л}лH■лI л}лI■лJ л}лJ■лK л}лK■лL л}лL■лM л}лM■лN л}лN■лO л}лO■лP л}лP■лQ л}лQ■лR л}лR■лS л}лS■лT л}лT■лU л}лU■лV л}лV■лW л}лW■лX л}лX■лY л}лY■лZ л}лZ■л[ л}л[■л\ л}л\■л] л}л]■л^ л}л^■л_ л}л_■л` л}л`■лa л}лa■лb л}лb■лc л}лc■лd л}лd■лe л}лe■лf л}лf■лg л}лg■лh л}лh■лi л}лi■лj л}лj■лk л}лk■лl л}лl■лm л}лm■лn л}лn■лo л}лo■лp л}лp■лq л}лq■лr л}лr■лs л}лs■лt л}лt■лu л}лuэ }■  л~ ■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■	 л~	■
- л~
-■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■ л~■  л~ ■! л~!■" л~"■# л~#■$ л~$■% л~%■& л~&■' л~'■( л~(■) л~)■* л~*■+ л~+■, л~,■- л~-■. л~.■/ л~/■0 л~0■1 л~1■2 л~2■3 л~3■4 л~4■5 л~5■6 л~6■7 л~7■8 л~8■9 л~9■: л~:■; л~;■< л~<■= л~=■> л~>■? л~?■л@ л~л@■лA л~лA■лB л~лB■лC л~лC■лD л~лD■лE л~лE■лF л~лF■лG л~лG■лH л~лH■лI л~лI■лJ л~лJ■лK л~лK■лL л~лL■лM л~лM■лN л~лN■лO л~лO■лP л~лP■лQ л~лQ■лR л~лR■лS л~лS■лT л~лT■лU л~лU■лV л~лV■лW л~лW■лX л~лX■лY л~лY■лZ л~лZ■л[ л~л[■л\ л~л\■л] л~л]■л^ л~л^■л_ л~л_■л` л~л`■лa л~лa■лb л~лb■лc л~лc■лd л~лd■лe л~лe■лf л~лf■лg л~лg■лh л~лh■лi л~лi■лj л~лj■лk л~лk■лl л~лl■лm л~лm■лn л~лn■лo л~лo■лp л~лp■лq л~лq■лr л~лr■лs л~лs■лt л~лt■лu л~лu■лv л~лv■лw л~лw■лx л~лx■лy л~лy■лz л~лz■л{ л~л{■л| л~л|≥■  л ■ л■ л■ л■ л■ л■ л■ л■ лэ B■  л─ ■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■	 л─	■
- л─
-■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■ л─■  л─ ■! л─!■" л─"■# л─#■$ л─$■% л─%■& л─&■' л─'■( л─(■) л─)■* л─*■+ л─+■, л─,■- л─-■. л─.■/ л─/■0 л─0■1 л─1■2 л─2■3 л─3■4 л─4■5 л─5■6 л─6■7 л─7■8 л─8■9 л─9■: л─:■; л─;■< л─<■= л─=■> л─>■? л─?■л@ л─л@■лA л─лAэ ■  л│ ■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■	 л│	■
- л│
-■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│■ л│э y■  л┌ ■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■	 л┌	■
- л┌
-■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■ л┌■  л┌ ■! л┌!■" л┌"■# л┌#■$ л┌$■% л┌%■& л┌&■' л┌'■( л┌(■) л┌)■* л┌*■+ л┌+■, л┌,■- л┌-■. л┌.■/ л┌/■0 л┌0■1 л┌1■2 л┌2■3 л┌3■4 л┌4■5 л┌5■6 л┌6■7 л┌7■8 л┌8■9 л┌9■: л┌:■; л┌;■< л┌<■= л┌=■> л┌>■? л┌?■л@ л┌л@■лA л┌лA■лB л┌лB■лC л┌лC■лD л┌лD■лE л┌лE■лF л┌лF■лG л┌лG■лH л┌лH■лI л┌лI■лJ л┌лJ■лK л┌лK■лL л┌лL■лM л┌лM■лN л┌лN■лO л┌лO■лP л┌лP■лQ л┌лQ■лR л┌лR■лS л┌лS■лT л┌лT■лU л┌лU■лV л┌лV■лW л┌лW■лX л┌лX■лY л┌лY■лZ л┌лZ■л[ л┌л[■л\ л┌л\■л] л┌л]■л^ л┌л^■л_ л┌л_■л` л┌л`■лa л┌лa■лb л┌лb■лc л┌лc■лd л┌лd■лe л┌лe■лf л┌лf■лg л┌лg■лh л┌лh■лi л┌лi■лj л┌лj■лk л┌лk■лl л┌лl■лm л┌лm■лn л┌лn■лo л┌лo■лp л┌лp■лq л┌лq■лr л┌лr■лs л┌лs■лt л┌лt■лu л┌лu■лv л┌лv■лw л┌лw■лx л┌лx≥■  л┐ ■ л┐■ л┐■ л┐■ л┐■ л┐■ л┐■ л┐■ л┐э k■  л└ ■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■	 л└	■
- л└
-■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■ л└■  л└ ■! л└!■" л└"■# л└#■$ л└$■% л└%■& л└&■' л└'■( л└(■) л└)■* л└*■+ л└+■, л└,■- л└-■. л└.■/ л└/■0 л└0■1 л└1■2 л└2■3 л└3■4 л└4■5 л└5■6 л└6■7 л└7■8 л└8■9 л└9■: л└:■; л└;■< л└<■= л└=■> л└>■? л└?■л@ л└л@■лA л└лA■лB л└лB■лC л└лC■лD л└лD■лE л└лE■лF л└лF■лG л└лG■лH л└лH■лI л└лI■лJ л└лJ■лK л└лK■лL л└лL■лM л└лM■лN л└лN■лO л└лO■лP л└лP■лQ л└лQ■лR л└лR■лS л└лS■лT л└лT■лU л└лU■лV л└лV■лW л└лW■лX л└лX■лY л└лY■лZ л└лZ■л[ л└л[■л\ л└л\■л] л└л]■л^ л└л^■л_ л└л_■л` л└л`■лa л└лa■лb л└лb■лc л└лc■лd л└лd■лe л└лe■лf л└лf■лg л└лg■лh л└лh■лi л└лi■лj л└лjэ ,■  л┘ ■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■	 л┘	■
- л┘
-■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■ л┘■  л┘ ■! л┘!■" л┘"■# л┘#■$ л┘$■% л┘%■& л┘&■' л┘'■( л┘(■) л┘)■* л┘*■+ л┘+э g■  л├ ■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■	 л├	■
- л├
-■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■ л├■  л├ ■! л├!■" л├"■# л├#■$ л├$■% л├%■& л├&■' л├'■( л├(■) л├)■* л├*■+ л├+■, л├,■- л├-■. л├.■/ л├/■0 л├0■1 л├1■2 л├2■3 л├3■4 л├4■5 л├5■6 л├6■7 л├7■8 л├8■9 л├9■: л├:■; л├;■< л├<■= л├=■> л├>■? л├?■л@ л├л@■лA л├лA■лB л├лB■лC л├лC■лD л├лD■лE л├лE■лF л├лF■лG л├лG■лH л├лH■лI л├лI■лJ л├лJ■лK л├лK■лL л├лL■лM л├лM■лN л├лN■лO л├лO■лP л├лP■лQ л├лQ■лR л├лR■лS л├лS■лT л├лT■лU л├лU■лV л├лV■лW л├лW■лX л├лX■лY л├лY■лZ л├лZ■л[ л├л[■л\ л├л\■л] л├л]■л^ л├л^■л_ л├л_■л` л├л`■лa л├лa■лb л├лb■лc л├лc■лd л├лd■лe л├лe■лf л├лf≥■  л┤ ■ л┤■ л┤■ л┤■ л┤■ л┤■ л┤■ л┤■ л┤э ■  л┬ ■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■	 л┬	■
- л┬
-■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬■ л┬э -■  л┴ ■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■	 л┴	■
- л┴
-■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■ л┴■  л┴ ■! л┴!■" л┴"■# л┴#■$ л┴$■% л┴%■& л┴&■' л┴'■( л┴(■) л┴)■* л┴*■+ л┴+■, л┴,э c■  л┼ ■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■	 л┼	■
- л┼
-■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■ л┼■  л┼ ■! л┼!■" л┼"■# л┼#■$ л┼$■% л┼%■& л┼&■' л┼'■( л┼(■) л┼)■* л┼*■+ л┼+■, л┼,■- л┼-■. л┼.■/ л┼/■0 л┼0■1 л┼1■2 л┼2■3 л┼3■4 л┼4■5 л┼5■6 л┼6■7 л┼7■8 л┼8■9 л┼9■: л┼:■; л┼;■< л┼<■= л┼=■> л┼>■? л┼?■л@ л┼л@■лA л┼лA■лB л┼лB■лC л┼лC■лD л┼лD■лE л┼лE■лF л┼лF■лG л┼лG■лH л┼лH■лI л┼лI■лJ л┼лJ■лK л┼лK■лL л┼лL■лM л┼лM■лN л┼лN■лO л┼лO■лP л┼лP■лQ л┼лQ■лR л┼лR■лS л┼лS■лT л┼лT■лU л┼лU■лV л┼лV■лW л┼лW■лX л┼лX■лY л┼лY■лZ л┼лZ■л[ л┼л[■л\ л┼л\■л] л┼л]■л^ л┼л^■л_ л┼л_■л` л┼л`■лa л┼лa■лb л┼лb≥■  л▀ ■ л▀■ л▀■ л▀■ л▀■ л▀■ л▀■ л▀■ л▀э #■  л▄ ■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■	 л▄	■
- л▄
-■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■ л▄■  л▄ ■! л▄!■" л▄"э (■  л█ ■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■	 л█	■
- л█
-■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■ л█■  л█ ■! л█!■" л█"■# л█#■$ л█$■% л█%■& л█&■' л█'э Y■  л▌ ■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■	 л▌	■
- л▌
-■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■ л▌■  л▌ ■! л▌!■" л▌"■# л▌#■$ л▌$■% л▌%■& л▌&■' л▌'■( л▌(■) л▌)■* л▌*■+ л▌+■, л▌,■- л▌-■. л▌.■/ л▌/■0 л▌0■1 л▌1■2 л▌2■3 л▌3■4 л▌4■5 л▌5■6 л▌6■7 л▌7■8 л▌8■9 л▌9■: л▌:■; л▌;■< л▌<■= л▌=■> л▌>■? л▌?■л@ л▌л@■лA л▌лA■лB л▌лB■лC л▌лC■лD л▌лD■лE л▌лE■лF л▌лF■лG л▌лG■лH л▌лH■лI л▌лI■лJ л▌лJ■лK л▌лK■лL л▌лL■лM л▌лM■лN л▌лN■лO л▌лO■лP л▌лP■лQ л▌лQ■лR л▌лR■лS л▌лS■лT л▌лT■лU л▌лU■лV л▌лV■лW л▌лW■лX л▌лX≈■  л▐ ■ л▐■ л▐■ л▐■ л▐■ л▐■ л▐∙■  л░ ■ л░■ л░■ л░■ л░▓■  л▒ ■ л▒э ■  л▓ ■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■	 л▓	■
- л▓
-■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓■ л▓э 4■  л⌠ ■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■	 л⌠	■
- л⌠
-■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■ л⌠■  л⌠ ■! л⌠!■" л⌠"■# л⌠#■$ л⌠$■% л⌠%■& л⌠&■' л⌠'■( л⌠(■) л⌠)■* л⌠*■+ л⌠+■, л⌠,■- л⌠-■. л⌠.■/ л⌠/■0 л⌠0■1 л⌠1■2 л⌠2■3 л⌠3э w■  л■ ■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■	 л■	■
- л■
-■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■ л■■  л■ ■! л■!■" л■"■# л■#■$ л■$■% л■%■& л■&■' л■'■( л■(■) л■)■* л■*■+ л■+■, л■,■- л■-■. л■.■/ л■/■0 л■0■1 л■1■2 л■2■3 л■3■4 л■4■5 л■5■6 л■6■7 л■7■8 л■8■9 л■9■: л■:■; л■;■< л■<■= л■=■> л■>■? л■?■л@ л■л@■лA л■лA■лB л■лB■лC л■лC■лD л■лD■лE л■лE■лF л■лF■лG л■лG■лH л■лH■лI л■лI■лJ л■лJ■лK л■лK■лL л■лL■лM л■лM■лN л■лN■лO л■лO■лP л■лP■лQ л■лQ■лR л■лR■лS л■лS■лT л■лT■лU л■лU■лV л■лV■лW л■лW■лX л■лX■лY л■лY■лZ л■лZ■л[ л■л[■л\ л■л\■л] л■л]■л^ л■л^■л_ л■л_■л` л■л`■лa л■лa■лb л■лb■лc л■лc■лd л■лd■лe л■лe■лf л■лf■лg л■лg■лh л■лh■лi л■лi■лj л■лj■лk л■лk■лl л■лl■лm л■лm■лn л■лn■лo л■лo■лp л■лp■лq л■лq■лr л■лr■лs л■лs■лt л■лt■лu л■лu■лv л■лvэ V■  л∙ ■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■	 л∙	■
- л∙
-■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■ л∙■  л∙ ■! л∙!■" л∙"■# л∙#■$ л∙$■% л∙%■& л∙&■' л∙'■( л∙(■) л∙)■* л∙*■+ л∙+■, л∙,■- л∙-■. л∙.■/ л∙/■0 л∙0■1 л∙1■2 л∙2■3 л∙3■4 л∙4■5 л∙5■6 л∙6■7 л∙7■8 л∙8■9 л∙9■: л∙:■; л∙;■< л∙<■= л∙=■> л∙>■? л∙?■л@ л∙л@■лA л∙лA■лB л∙лB■лC л∙лC■лD л∙лD■лE л∙лE■лF л∙лF■лG л∙лG■лH л∙лH■лI л∙лI■лJ л∙лJ■лK л∙лK■лL л∙лL■лM л∙лM■лN л∙лN■лO л∙лO■лP л∙лP■лQ л∙лQ■лR л∙лR■лS л∙лS■лT л∙лT■лU л∙лUэ B■  л√ ■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■	 л√	■
- л√
-■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■ л√■  л√ ■! л√!■" л√"■# л√#■$ л√$■% л√%■& л√&■' л√'■( л√(■) л√)■* л√*■+ л√+■, л√,■- л√-■. л√.■/ л√/■0 л√0■1 л√1■2 л√2■3 л√3■4 л√4■5 л√5■6 л√6■7 л√7■8 л√8■9 л√9■: л√:■; л√;■< л√<■= л√=■> л√>■? л√?■л@ л√л@■лA л√лAэ h■  л≈ ■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■	 л≈	■
- л≈
-■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■ л≈■  л≈ ■! л≈!■" л≈"■# л≈#■$ л≈$■% л≈%■& л≈&■' л≈'■( л≈(■) л≈)■* л≈*■+ л≈+■, л≈,■- л≈-■. л≈.■/ л≈/■0 л≈0■1 л≈1■2 л≈2■3 л≈3■4 л≈4■5 л≈5■6 л≈6■7 л≈7■8 л≈8■9 л≈9■: л≈:■; л≈;■< л≈<■= л≈=■> л≈>■? л≈?■л@ л≈л@■лA л≈лA■лB л≈лB■лC л≈лC■лD л≈лD■лE л≈лE■лF л≈лF■лG л≈лG■лH л≈лH■лI л≈лI■лJ л≈лJ■лK л≈лK■лL л≈лL■лM л≈лM■лN л≈лN■лO л≈лO■лP л≈лP■лQ л≈лQ■лR л≈лR■лS л≈лS■лT л≈лT■лU л≈лU■лV л≈лV■лW л≈лW■лX л≈лX■лY л≈лY■лZ л≈лZ■л[ л≈л[■л\ л≈л\■л] л≈л]■л^ л≈л^■л_ л≈л_■л` л≈л`■лa л≈лa■лb л≈лb■лc л≈лc■лd л≈лd■лe л≈лe■лf л≈лf■лg л≈лgэ D■  л≤ ■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■	 л≤	■
- л≤
-■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■ л≤■  л≤ ■! л≤!■" л≤"■# л≤#■$ л≤$■% л≤%■& л≤&■' л≤'■( л≤(■) л≤)■* л≤*■+ л≤+■, л≤,■- л≤-■. л≤.■/ л≤/■0 л≤0■1 л≤1■2 л≤2■3 л≤3■4 л≤4■5 л≤5■6 л≤6■7 л≤7■8 л≤8■9 л≤9■: л≤:■; л≤;■< л≤<■= л≤=■> л≤>■? л≤?■л@ л≤л@■лA л≤лA■лB л≤лB■лC л≤лCэ t■  л≥ ■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■	 л≥	■
- л≥
-■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■ л≥■  л≥ ■! л≥!■" л≥"■# л≥#■$ л≥$■% л≥%■& л≥&■' л≥'■( л≥(■) л≥)■* л≥*■+ л≥+■, л≥,■- л≥-■. л≥.■/ л≥/■0 л≥0■1 л≥1■2 л≥2■3 л≥3■4 л≥4■5 л≥5■6 л≥6■7 л≥7■8 л≥8■9 л≥9■: л≥:■; л≥;■< л≥<■= л≥=■> л≥>■? л≥?■л@ л≥л@■лA л≥лA■лB л≥лB■лC л≥лC■лD л≥лD■лE л≥лE■лF л≥лF■лG л≥лG■лH л≥лH■лI л≥лI■лJ л≥лJ■лK л≥лK■лL л≥лL■лM л≥лM■лN л≥лN■лO л≥лO■лP л≥лP■лQ л≥лQ■лR л≥лR■лS л≥лS■лT л≥лT■лU л≥лU■лV л≥лV■лW л≥лW■лX л≥лX■лY л≥лY■лZ л≥лZ■л[ л≥л[■л\ л≥л\■л] л≥л]■л^ л≥л^■л_ л≥л_■л` л≥л`■лa л≥лa■лb л≥лb■лc л≥лc■лd л≥лd■лe л≥лe■лf л≥лf■лg л≥лg■лh л≥лh■лi л≥лi■лj л≥лj■лk л≥лk■лl л≥лl■лm л≥лm■лn л≥лn■лo л≥лo■лp л≥лp■лq л≥лq■лr л≥лr■лs л≥лsэ J■  л  ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■	 л 	■
- л 
-■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■ л ■  л  ■! л !■" л "■# л #■$ л $■% л %■& л &■' л '■( л (■) л )■* л *■+ л +■, л ,■- л -■. л .■/ л /■0 л 0■1 л 1■2 л 2■3 л 3■4 л 4■5 л 5■6 л 6■7 л 7■8 л 8■9 л 9■: л :■; л ;■< л <■= л =■> л >■? л ?■л@ л л@■лA л лA■лB л лB■лC л лC■лD л лD■лE л лE■лF л лF■лG л лG■лH л лH■лI л лIэ 9■  л⌡ ■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■	 л⌡	■
- л⌡
-■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■ л⌡■  л⌡ ■! л⌡!■" л⌡"■# л⌡#■$ л⌡$■% л⌡%■& л⌡&■' л⌡'■( л⌡(■) л⌡)■* л⌡*■+ л⌡+■, л⌡,■- л⌡-■. л⌡.■/ л⌡/■0 л⌡0■1 л⌡1■2 л⌡2■3 л⌡3■4 л⌡4■5 л⌡5■6 л⌡6■7 л⌡7■8 л⌡8э {■  л° ■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■	 л°	■
- л°
-■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■ л°■  л° ■! л°!■" л°"■# л°#■$ л°$■% л°%■& л°&■' л°'■( л°(■) л°)■* л°*■+ л°+■, л°,■- л°-■. л°.■/ л°/■0 л°0■1 л°1■2 л°2■3 л°3■4 л°4■5 л°5■6 л°6■7 л°7■8 л°8■9 л°9■: л°:■; л°;■< л°<■= л°=■> л°>■? л°?■л@ л°л@■лA л°лA■лB л°лB■лC л°лC■лD л°лD■лE л°лE■лF л°лF■лG л°лG■лH л°лH■лI л°лI■лJ л°лJ■лK л°лK■лL л°лL■лM л°лM■лN л°лN■лO л°лO■лP л°лP■лQ л°лQ■лR л°лR■лS л°лS■лT л°лT■лU л°лU■лV л°лV■лW л°лW■лX л°лX■лY л°лY■лZ л°лZ■л[ л°л[■л\ л°л\■л] л°л]■л^ л°л^■л_ л°л_■л` л°л`■лa л°лa■лb л°лb■лc л°лc■лd л°лd■лe л°лe■лf л°лf■лg л°лg■лh л°лh■лi л°лi■лj л°лj■лk л°лk■лl л°лl■лm л°лm■лn л°лn■лo л°лo■лp л°лp■лq л°лq■лr л°лr■лs л°лs■лt л°лt■лu л°лu■лv л°лv■лw л°лw■лx л°лx■лy л°лy■лz л°лz≥■  л² ■ л²■ л²■ л²■ л²■ л²■ л²■ л²■ л²э -■  л· ■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■	 л·	■
- л·
-■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■ л·■  л· ■! л·!■" л·"■# л·#■$ л·$■% л·%■& л·&■' л·'■( л·(■) л·)■* л·*■+ л·+■, л·,э c■  л÷ ■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■	 л÷	■
- л÷
-■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■ л÷■  л÷ ■! л÷!■" л÷"■# л÷#■$ л÷$■% л÷%■& л÷&■' л÷'■( л÷(■) л÷)■* л÷*■+ л÷+■, л÷,■- л÷-■. л÷.■/ л÷/■0 л÷0■1 л÷1■2 л÷2■3 л÷3■4 л÷4■5 л÷5■6 л÷6■7 л÷7■8 л÷8■9 л÷9■: л÷:■; л÷;■< л÷<■= л÷=■> л÷>■? л÷?■л@ л÷л@■лA л÷лA■лB л÷лB■лC л÷лC■лD л÷лD■лE л÷лE■лF л÷лF■лG л÷лG■лH л÷лH■лI л÷лI■лJ л÷лJ■лK л÷лK■лL л÷лL■лM л÷лM■лN л÷лN■лO л÷лO■лP л÷лP■лQ л÷лQ■лR л÷лR■лS л÷лS■лT л÷лT■лU л÷лU■лV л÷лV■лW л÷лW■лX л÷лX■лY л÷лY■лZ л÷лZ■л[ л÷л[■л\ л÷л\■л] л÷л]■л^ л÷л^■л_ л÷л_■л` л÷л`■лa л÷лa■лb л÷лb≥■  л═ ■ л═■ л═■ л═■ л═■ л═■ л═■ л═■ л═э #■  л║ ■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■	 л║	■
- л║
-■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■ л║■  л║ ■! л║!■" л║"э (■  л╒ ■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■	 л╒	■
- л╒
-■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■ л╒■  л╒ ■! л╒!■" л╒"■# л╒#■$ л╒$■% л╒%■& л╒&■' л╒'э o■  лё ■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■	 лё	■
- лё
-■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■ лё■  лё ■! лё!■" лё"■# лё#■$ лё$■% лё%■& лё&■' лё'■( лё(■) лё)■* лё*■+ лё+■, лё,■- лё-■. лё.■/ лё/■0 лё0■1 лё1■2 лё2■3 лё3■4 лё4■5 лё5■6 лё6■7 лё7■8 лё8■9 лё9■: лё:■; лё;■< лё<■= лё=■> лё>■? лё?■л@ лёл@■лA лёлA■лB лёлB■лC лёлC■лD лёлD■лE лёлE■лF лёлF■лG лёлG■лH лёлH■лI лёлI■лJ лёлJ■лK лёлK■лL лёлL■лM лёлM■лN лёлN■лO лёлO■лP лёлP■лQ лёлQ■лR лёлR■лS лёлS■лT лёлT■лU лёлU■лV лёлV■лW лёлW■лX лёлX■лY лёлY■лZ лёлZ■л[ лёл[■л\ лёл\■л] лёл]■л^ лёл^■л_ лёл_■л` лёл`■лa лёлa■лb лёлb■лc лёлc■лd лёлd■лe лёлe■лf лёлf■лg лёлg■лh лёлh■лi лёлi■лj лёлj■лk лёлk■лl лёлl■лm лёлm■лn лёлn≈■  л╓ ■ л╓■ л╓■ л╓■ л╓■ л╓■ л╓∙■  л╔ ■ л╔■ л╔■ л╔■ л╔▓■  л╕ ■ л╕э ■  л╖ ■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■	 л╖	■
- л╖
-■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖■ л╖э 4■  л╗ ■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■	 л╗	■
- л╗
-■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■ л╗■  л╗ ■! л╗!■" л╗"■# л╗#■$ л╗$■% л╗%■& л╗&■' л╗'■( л╗(■) л╗)■* л╗*■+ л╗+■, л╗,■- л╗-■. л╗.■/ л╗/■0 л╗0■1 л╗1■2 л╗2■3 л╗3э w■  л╘ ■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■	 л╘	■
- л╘
-■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■ л╘■  л╘ ■! л╘!■" л╘"■# л╘#■$ л╘$■% л╘%■& л╘&■' л╘'■( л╘(■) л╘)■* л╘*■+ л╘+■, л╘,■- л╘-■. л╘.■/ л╘/■0 л╘0■1 л╘1■2 л╘2■3 л╘3■4 л╘4■5 л╘5■6 л╘6■7 л╘7■8 л╘8■9 л╘9■: л╘:■; л╘;■< л╘<■= л╘=■> л╘>■? л╘?■л@ л╘л@■лA л╘лA■лB л╘лB■лC л╘лC■лD л╘лD■лE л╘лE■лF л╘лF■лG л╘лG■лH л╘лH■лI л╘лI■лJ л╘лJ■лK л╘лK■лL л╘лL■лM л╘лM■лN л╘лN■лO л╘лO■лP л╘лP■лQ л╘лQ■лR л╘лR■лS л╘лS■лT л╘лT■лU л╘лU■лV л╘лV■лW л╘лW■лX л╘лX■лY л╘лY■лZ л╘лZ■л[ л╘л[■л\ л╘л\■л] л╘л]■л^ л╘л^■л_ л╘л_■л` л╘л`■лa л╘лa■лb л╘лb■лc л╘лc■лd л╘лd■лe л╘лe■лf л╘лf■лg л╘лg■лh л╘лh■лi л╘лi■лj л╘лj■лk л╘лk■лl л╘лl■лm л╘лm■лn л╘лn■лo л╘лo■лp л╘лp■лq л╘лq■лr л╘лr■лs л╘лs■лt л╘лt■лu л╘лu■лv л╘лvэ T■  л╙ ■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■	 л╙	■
- л╙
-■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■ л╙■  л╙ ■! л╙!■" л╙"■# л╙#■$ л╙$■% л╙%■& л╙&■' л╙'■( л╙(■) л╙)■* л╙*■+ л╙+■, л╙,■- л╙-■. л╙.■/ л╙/■0 л╙0■1 л╙1■2 л╙2■3 л╙3■4 л╙4■5 л╙5■6 л╙6■7 л╙7■8 л╙8■9 л╙9■: л╙:■; л╙;■< л╙<■= л╙=■> л╙>■? л╙?■л@ л╙л@■лA л╙лA■лB л╙лB■лC л╙лC■лD л╙лD■лE л╙лE■лF л╙лF■лG л╙лG■лH л╙лH■лI л╙лI■лJ л╙лJ■лK л╙лK■лL л╙лL■лM л╙лM■лN л╙лN■лO л╙лO■лP л╙лP■лQ л╙лQ■лR л╙лR■лS л╙лSэ B■  л╚ ■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■	 л╚	■
- л╚
-■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■ л╚■  л╚ ■! л╚!■" л╚"■# л╚#■$ л╚$■% л╚%■& л╚&■' л╚'■( л╚(■) л╚)■* л╚*■+ л╚+■, л╚,■- л╚-■. л╚.■/ л╚/■0 л╚0■1 л╚1■2 л╚2■3 л╚3■4 л╚4■5 л╚5■6 л╚6■7 л╚7■8 л╚8■9 л╚9■: л╚:■; л╚;■< л╚<■= л╚=■> л╚>■? л╚?■л@ л╚л@■лA л╚лAэ h■  л╛ ■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■	 л╛	■
- л╛
-■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■ л╛■  л╛ ■! л╛!■" л╛"■# л╛#■$ л╛$■% л╛%■& л╛&■' л╛'■( л╛(■) л╛)■* л╛*■+ л╛+■, л╛,■- л╛-■. л╛.■/ л╛/■0 л╛0■1 л╛1■2 л╛2■3 л╛3■4 л╛4■5 л╛5■6 л╛6■7 л╛7■8 л╛8■9 л╛9■: л╛:■; л╛;■< л╛<■= л╛=■> л╛>■? л╛?■л@ л╛л@■лA л╛лA■лB л╛лB■лC л╛лC■лD л╛лD■лE л╛лE■лF л╛лF■лG л╛лG■лH л╛лH■лI л╛лI■лJ л╛лJ■лK л╛лK■лL л╛лL■лM л╛лM■лN л╛лN■лO л╛лO■лP л╛лP■лQ л╛лQ■лR л╛лR■лS л╛лS■лT л╛лT■лU л╛лU■лV л╛лV■лW л╛лW■лX л╛лX■лY л╛лY■лZ л╛лZ■л[ л╛л[■л\ л╛л\■л] л╛л]■л^ л╛л^■л_ л╛л_■л` л╛л`■лa л╛лa■лb л╛лb■лc л╛лc■лd л╛лd■лe л╛лe■лf л╛лf■лg л╛лgэ ■  л╜ ■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■	 л╜	■
- л╜
-■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜■ л╜э ■  л╝ ■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■	 л╝	■
- л╝
-■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝■ л╝э 8■  л╞ ■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■	 л╞	■
- л╞
-■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■ л╞■  л╞ ■! л╞!■" л╞"■# л╞#■$ л╞$■% л╞%■& л╞&■' л╞'■( л╞(■) л╞)■* л╞*■+ л╞+■, л╞,■- л╞-■. л╞.■/ л╞/■0 л╞0■1 л╞1■2 л╞2■3 л╞3■4 л╞4■5 л╞5■6 л╞6■7 л╞7э ┐■  л╟ ■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■	 л╟	■
- л╟
-■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■ л╟■  л╟ ■! л╟!■" л╟"■# л╟#■$ л╟$■% л╟%■& л╟&■' л╟'■( л╟(■) л╟)■* л╟*■+ л╟+■, л╟,■- л╟-■. л╟.■/ л╟/■0 л╟0■1 л╟1■2 л╟2■3 л╟3■4 л╟4■5 л╟5■6 л╟6■7 л╟7■8 л╟8■9 л╟9■: л╟:■; л╟;■< л╟<■= л╟=■> л╟>■? л╟?■л@ л╟л@■лA л╟лA■лB л╟лB■лC л╟лC■лD л╟лD■лE л╟лE■лF л╟лF■лG л╟лG■лH л╟лH■лI л╟лI■лJ л╟лJ■лK л╟лK■лL л╟лL■лM л╟лM■лN л╟лN■лO л╟лO■лP л╟лP■лQ л╟лQ■лR л╟лR■лS л╟лS■лT л╟лT■лU л╟лU■лV л╟лV■лW л╟лW■лX л╟лX■лY л╟лY■лZ л╟лZ■л[ л╟л[■л\ л╟л\■л] л╟л]■л^ л╟л^■л_ л╟л_■л` л╟л`■лa л╟лa■лb л╟лb■лc л╟лc■лd л╟лd■лe л╟лe■лf л╟лf■лg л╟лg■лh л╟лh■лi л╟лi■лj л╟лj■лk л╟лk■лl л╟лl■лm л╟лm■лn л╟лn■лo л╟лo■лp л╟лp■лq л╟лq■лr л╟лr■лs л╟лs■лt л╟лt■лu л╟лu■лv л╟лv■лw л╟лw■лx л╟лx■лy л╟лy■лz л╟лz■л{ л╟л{■л| л╟л|■л} л╟л}■л~ л╟л~■л л╟л■л─ л╟л─■л│ л╟л│■л┌ л╟л┌э C■  л╠ ■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■	 л╠	■
- л╠
-■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■ л╠■  л╠ ■! л╠!■" л╠"■# л╠#■$ л╠$■% л╠%■& л╠&■' л╠'■( л╠(■) л╠)■* л╠*■+ л╠+■, л╠,■- л╠-■. л╠.■/ л╠/■0 л╠0■1 л╠1■2 л╠2■3 л╠3■4 л╠4■5 л╠5■6 л╠6■7 л╠7■8 л╠8■9 л╠9■: л╠:■; л╠;■< л╠<■= л╠=■> л╠>■? л╠?■л@ л╠л@■лA л╠лA■лB л╠лBэ O■  л╡ ■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■	 л╡	■
- л╡
-■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■ л╡■  л╡ ■! л╡!■" л╡"■# л╡#■$ л╡$■% л╡%■& л╡&■' л╡'■( л╡(■) л╡)■* л╡*■+ л╡+■, л╡,■- л╡-■. л╡.■/ л╡/■0 л╡0■1 л╡1■2 л╡2■3 л╡3■4 л╡4■5 л╡5■6 л╡6■7 л╡7■8 л╡8■9 л╡9■: л╡:■; л╡;■< л╡<■= л╡=■> л╡>■? л╡?■л@ л╡л@■лA л╡лA■лB л╡лB■лC л╡лC■лD л╡лD■лE л╡лE■лF л╡лF■лG л╡лG■лH л╡лH■лI л╡лI■лJ л╡лJ■лK л╡лK■лL л╡лL■лM л╡лM■лN л╡лNэ ╫■  лЁ ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■	 лЁ	■
- лЁ
-■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■ лЁ■  лЁ ■! лЁ!■" лЁ"■# лЁ#■$ лЁ$■% лЁ%■& лЁ&■' лЁ'■( лЁ(■) лЁ)■* лЁ*■+ лЁ+■, лЁ,■- лЁ-■. лЁ.■/ лЁ/■0 лЁ0■1 лЁ1■2 лЁ2■3 лЁ3■4 лЁ4■5 лЁ5■6 лЁ6■7 лЁ7■8 лЁ8■9 лЁ9■: лЁ:■; лЁ;■< лЁ<■= лЁ=■> лЁ>■? лЁ?■л@ лЁл@■лA лЁлA■лB лЁлB■лC лЁлC■лD лЁлD■лE лЁлE■лF лЁлF■лG лЁлG■лH лЁлH■лI лЁлI■лJ лЁлJ■лK лЁлK■лL лЁлL■лM лЁлM■лN лЁлN■лO лЁлO■лP лЁлP■лQ лЁлQ■лR лЁлR■лS лЁлS■лT лЁлT■лU лЁлU■лV лЁлV■лW лЁлW■лX лЁлX■лY лЁлY■лZ лЁлZ■л[ лЁл[■л\ лЁл\■л] лЁл]■л^ лЁл^■л_ лЁл_■л` лЁл`■лa лЁлa■лb лЁлb■лc лЁлc■лd лЁлd■лe лЁлe■лf лЁлf■лg лЁлg■лh лЁлh■лi лЁлi■лj лЁлj■лk лЁлk■лl лЁлl■лm лЁлm■лn лЁлn■лo лЁлo■лp лЁлp■лq лЁлq■лr лЁлr■лs лЁлs■лt лЁлt■лu лЁлu■лv лЁлv■лw лЁлw■лx лЁлx■лy лЁлy■лz лЁлz■л{ лЁл{■л| лЁл|■л} лЁл}■л~ лЁл~■л лЁл■л─ лЁл─■л│ лЁл│■л┌ лЁл┌■л┐ лЁл┐■л└ лЁл└■л┘ лЁл┘■л├ лЁл├■л┤ лЁл┤■л┬ лЁл┬■л┴ лЁл┴■л┼ лЁл┼■л▀ лЁл▀■л▄ лЁл▄■л█ лЁл█■л▌ лЁл▌■л▐ лЁл▐■л░ лЁл░■л▒ лЁл▒■л▓ лЁл▓■л⌠ лЁл⌠■л■ лЁл■■л∙ лЁл∙■л√ лЁл√■л≈ лЁл≈■л≤ лЁл≤■л≥ лЁл≥■л  лЁл ■л⌡ лЁл⌡■л° лЁл°■л² лЁл²■л· лЁл·■л÷ лЁл÷■л═ лЁл═■л║ лЁл║■л╒ лЁл╒■лё лЁлё■л╓ лЁл╓■л╔ лЁл╔■л╕ лЁл╕■л╖ лЁл╖■л╗ лЁл╗■л╘ лЁл╘■л╙ лЁл╙■л╚ лЁл╚■л╛ лЁл╛■л╜ лЁл╜■л╝ лЁл╝■л╞ лЁл╞■л╟ лЁл╟■л╠ лЁл╠■л╡ лЁл╡■лЁ лЁлЁ■л╢ лЁл╢■л╣ лЁл╣■л╤ лЁл╤■л╥ лЁл╥■л╦ лЁл╦■л╧ лЁл╧■л╨ лЁл╨■л╩ лЁл╩■л╪ лЁл╪э │■  л╢ ■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■	 л╢	■
- л╢
-■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■ л╢■  л╢ ■! л╢!■" л╢"■# л╢#■$ л╢$■% л╢%■& л╢&■' л╢'■( л╢(■) л╢)■* л╢*■+ л╢+■, л╢,■- л╢-■. л╢.■/ л╢/■0 л╢0■1 л╢1■2 л╢2■3 л╢3■4 л╢4■5 л╢5■6 л╢6■7 л╢7■8 л╢8■9 л╢9■: л╢:■; л╢;■< л╢<■= л╢=■> л╢>■? л╢?■л@ л╢л@■лA л╢лA■лB л╢лB■лC л╢лC■лD л╢лD■лE л╢лE■лF л╢лF■лG л╢лG■лH л╢лH■лI л╢лI■лJ л╢лJ■лK л╢лK■лL л╢лL■лM л╢лM■лN л╢лN■лO л╢лO■лP л╢лP■лQ л╢лQ■лR л╢лR■лS л╢лS■лT л╢лT■лU л╢лU■лV л╢лV■лW л╢лW■лX л╢лX■лY л╢лY■лZ л╢лZ■л[ л╢л[■л\ л╢л\■л] л╢л]■л^ л╢л^■л_ л╢л_■л` л╢л`■лa л╢лa■лb л╢лb■лc л╢лc■лd л╢лd■лe л╢лe■лf л╢лf■лg л╢лg■лh л╢лh■лi л╢лi■лj л╢лj■лk л╢лk■лl л╢лl■лm л╢лm■лn л╢лn■лo л╢лo■лp л╢лp■лq л╢лq■лr л╢лr■лs л╢лs■лt л╢лt■лu л╢лu■лv л╢лv■лw л╢лw■лx л╢лx■лy л╢лy■лz л╢лz■л{ л╢л{■л| л╢л|■л} л╢л}■л~ л╢л~■л л╢л■л─ л╢л─э z■  л╣ ■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■	 л╣	■
- л╣
-■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■ л╣■  л╣ ■! л╣!■" л╣"■# л╣#■$ л╣$■% л╣%■& л╣&■' л╣'■( л╣(■) л╣)■* л╣*■+ л╣+■, л╣,■- л╣-■. л╣.■/ л╣/■0 л╣0■1 л╣1■2 л╣2■3 л╣3■4 л╣4■5 л╣5■6 л╣6■7 л╣7■8 л╣8■9 л╣9■: л╣:■; л╣;■< л╣<■= л╣=■> л╣>■? л╣?■л@ л╣л@■лA л╣лA■лB л╣лB■лC л╣лC■лD л╣лD■лE л╣лE■лF л╣лF■лG л╣лG■лH л╣лH■лI л╣лI■лJ л╣лJ■лK л╣лK■лL л╣лL■лM л╣лM■лN л╣лN■лO л╣лO■лP л╣лP■лQ л╣лQ■лR л╣лR■лS л╣лS■лT л╣лT■лU л╣лU■лV л╣лV■лW л╣лW■лX л╣лX■лY л╣лY■лZ л╣лZ■л[ л╣л[■л\ л╣л\■л] л╣л]■л^ л╣л^■л_ л╣л_■л` л╣л`■лa л╣лa■лb л╣лb■лc л╣лc■лd л╣лd■лe л╣лe■лf л╣лf■лg л╣лg■лh л╣лh■лi л╣лi■лj л╣лj■лk л╣лk■лl л╣лl■лm л╣лm■лn л╣лn■лo л╣лo■лp л╣лp■лq л╣лq■лr л╣лr■лs л╣лs■лt л╣лt■лu л╣лu■лv л╣лv■лw л╣лw■лx л╣лx■лy л╣лyэ Q■  л╤ ■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■	 л╤	■
- л╤
-■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■ л╤■  л╤ ■! л╤!■" л╤"■# л╤#■$ л╤$■% л╤%■& л╤&■' л╤'■( л╤(■) л╤)■* л╤*■+ л╤+■, л╤,■- л╤-■. л╤.■/ л╤/■0 л╤0■1 л╤1■2 л╤2■3 л╤3■4 л╤4■5 л╤5■6 л╤6■7 л╤7■8 л╤8■9 л╤9■: л╤:■; л╤;■< л╤<■= л╤=■> л╤>■? л╤?■л@ л╤л@■лA л╤лA■лB л╤лB■лC л╤лC■лD л╤лD■лE л╤лE■лF л╤лF■лG л╤лG■лH л╤лH■лI л╤лI■лJ л╤лJ■лK л╤лK■лL л╤лL■лM л╤лM■лN л╤лN■лO л╤лO■лP л╤лPэ 9■  л╥ ■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■	 л╥	■
- л╥
-■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■ л╥■  л╥ ■! л╥!■" л╥"■# л╥#■$ л╥$■% л╥%■& л╥&■' л╥'■( л╥(■) л╥)■* л╥*■+ л╥+■, л╥,■- л╥-■. л╥.■/ л╥/■0 л╥0■1 л╥1■2 л╥2■3 л╥3■4 л╥4■5 л╥5■6 л╥6■7 л╥7■8 л╥8э 9■  л╦ ■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■	 л╦	■
- л╦
-■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■ л╦■  л╦ ■! л╦!■" л╦"■# л╦#■$ л╦$■% л╦%■& л╦&■' л╦'■( л╦(■) л╦)■* л╦*■+ л╦+■, л╦,■- л╦-■. л╦.■/ л╦/■0 л╦0■1 л╦1■2 л╦2■3 л╦3■4 л╦4■5 л╦5■6 л╦6■7 л╦7■8 л╦8э ┘■  л╧ ■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■	 л╧	■
- л╧
-■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■ л╧■  л╧ ■! л╧!■" л╧"■# л╧#■$ л╧$■% л╧%■& л╧&■' л╧'■( л╧(■) л╧)■* л╧*■+ л╧+■, л╧,■- л╧-■. л╧.■/ л╧/■0 л╧0■1 л╧1■2 л╧2■3 л╧3■4 л╧4■5 л╧5■6 л╧6■7 л╧7■8 л╧8■9 л╧9■: л╧:■; л╧;■< л╧<■= л╧=■> л╧>■? л╧?■л@ л╧л@■лA л╧лA■лB л╧лB■лC л╧лC■лD л╧лD■лE л╧лE■лF л╧лF■лG л╧лG■лH л╧лH■лI л╧лI■лJ л╧лJ■лK л╧лK■лL л╧лL■лM л╧лM■лN л╧лN■лO л╧лO■лP л╧лP■лQ л╧лQ■лR л╧лR■лS л╧лS■лT л╧лT■лU л╧лU■лV л╧лV■лW л╧лW■лX л╧лX■лY л╧лY■лZ л╧лZ■л[ л╧л[■л\ л╧л\■л] л╧л]■л^ л╧л^■л_ л╧л_■л` л╧л`■лa л╧лa■лb л╧лb■лc л╧лc■лd л╧лd■лe л╧лe■лf л╧лf■лg л╧лg■лh л╧лh■лi л╧лi■лj л╧лj■лk л╧лk■лl л╧лl■лm л╧лm■лn л╧лn■лo л╧лo■лp л╧лp■лq л╧лq■лr л╧лr■лs л╧лs■лt л╧лt■лu л╧лu■лv л╧лv■лw л╧лw■лx л╧лx■лy л╧лy■лz л╧лz■л{ л╧л{■л| л╧л|■л} л╧л}■л~ л╧л~■л л╧л■л─ л╧л─■л│ л╧л│■л┌ л╧л┌■л┐ л╧л┐■л└ л╧л└э E■  л╨ ■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■	 л╨	■
- л╨
-■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■ л╨■  л╨ ■! л╨!■" л╨"■# л╨#■$ л╨$■% л╨%■& л╨&■' л╨'■( л╨(■) л╨)■* л╨*■+ л╨+■, л╨,■- л╨-■. л╨.■/ л╨/■0 л╨0■1 л╨1■2 л╨2■3 л╨3■4 л╨4■5 л╨5■6 л╨6■7 л╨7■8 л╨8■9 л╨9■: л╨:■; л╨;■< л╨<■= л╨=■> л╨>■? л╨?■л@ л╨л@■лA л╨лA■лB л╨лB■лC л╨лC■лD л╨лDэ Q■  л╩ ■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■	 л╩	■
- л╩
-■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■ л╩■  л╩ ■! л╩!■" л╩"■# л╩#■$ л╩$■% л╩%■& л╩&■' л╩'■( л╩(■) л╩)■* л╩*■+ л╩+■, л╩,■- л╩-■. л╩.■/ л╩/■0 л╩0■1 л╩1■2 л╩2■3 л╩3■4 л╩4■5 л╩5■6 л╩6■7 л╩7■8 л╩8■9 л╩9■: л╩:■; л╩;■< л╩<■= л╩=■> л╩>■? л╩?■л@ л╩л@■лA л╩лA■лB л╩лB■лC л╩лC■лD л╩лD■лE л╩лE■лF л╩лF■лG л╩лG■лH л╩лH■лI л╩лI■лJ л╩лJ■лK л╩лK■лL л╩лL■лM л╩лM■лN л╩лN■лO л╩лO■лP л╩лPэ ╬■  л╪ ■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■	 л╪	■
- л╪
-■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■ л╪■  л╪ ■! л╪!■" л╪"■# л╪#■$ л╪$■% л╪%■& л╪&■' л╪'■( л╪(■) л╪)■* л╪*■+ л╪+■, л╪,■- л╪-■. л╪.■/ л╪/■0 л╪0■1 л╪1■2 л╪2■3 л╪3■4 л╪4■5 л╪5■6 л╪6■7 л╪7■8 л╪8■9 л╪9■: л╪:■; л╪;■< л╪<■= л╪=■> л╪>■? л╪?■л@ л╪л@■лA л╪лA■лB л╪лB■лC л╪лC■лD л╪лD■лE л╪лE■лF л╪лF■лG л╪лG■лH л╪лH■лI л╪лI■лJ л╪лJ■лK л╪лK■лL л╪лL■лM л╪лM■лN л╪лN■лO л╪лO■лP л╪лP■лQ л╪лQ■лR л╪лR■лS л╪лS■лT л╪лT■лU л╪лU■лV л╪лV■лW л╪лW■лX л╪лX■лY л╪лY■лZ л╪лZ■л[ л╪л[■л\ л╪л\■л] л╪л]■л^ л╪л^■л_ л╪л_■л` л╪л`■лa л╪лa■лb л╪лb■лc л╪лc■лd л╪лd■лe л╪лe■лf л╪лf■лg л╪лg■лh л╪лh■лi л╪лi■лj л╪лj■лk л╪лk■лl л╪лl■лm л╪лm■лn л╪лn■лo л╪лo■лp л╪лp■лq л╪лq■лr л╪лr■лs л╪лs■лt л╪лt■лu л╪лu■лv л╪лv■лw л╪лw■лx л╪лx■лy л╪лy■лz л╪лz■л{ л╪л{■л| л╪л|■л} л╪л}■л~ л╪л~■л л╪л■л─ л╪л─■л│ л╪л│■л┌ л╪л┌■л┐ л╪л┐■л└ л╪л└■л┘ л╪л┘■л├ л╪л├■л┤ л╪л┤■л┬ л╪л┬■л┴ л╪л┴■л┼ л╪л┼■л▀ л╪л▀■л▄ л╪л▄■л█ л╪л█■л▌ л╪л▌■л▐ л╪л▐■л░ л╪л░■л▒ л╪л▒■л▓ л╪л▓■л⌠ л╪л⌠■л■ л╪л■■л∙ л╪л∙■л√ л╪л√■л≈ л╪л≈■л≤ л╪л≤■л≥ л╪л≥■л  л╪л ■л⌡ л╪л⌡■л° л╪л°■л² л╪л²■л· л╪л·■л÷ л╪л÷■л═ л╪л═■л║ л╪л║■л╒ л╪л╒■лё л╪лё■л╓ л╪л╓■л╔ л╪л╔■л╕ л╪л╕■л╖ л╪л╖■л╗ л╪л╗■л╘ л╪л╘■л╙ л╪л╙■л╚ л╪л╚■л╛ л╪л╛■л╜ л╪л╜■л╝ л╪л╝■л╞ л╪л╞■л╟ л╪л╟■л╠ л╪л╠■л╡ л╪л╡■лЁ л╪лЁ■л╢ л╪л╢■л╣ л╪л╣■л╤ л╪л╤■л╥ л╪л╥■л╦ л╪л╦■л╧ л╪л╧■л╨ л╪л╨■л╩ л╪л╩■л╪ л╪л╪■л╫ л╪л╫э ┌■  л╫ ■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■	 л╫	■
- л╫
-■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■ л╫■  л╫ ■! л╫!■" л╫"■# л╫#■$ л╫$■% л╫%■& л╫&■' л╫'■( л╫(■) л╫)■* л╫*■+ л╫+■, л╫,■- л╫-■. л╫.■/ л╫/■0 л╫0■1 л╫1■2 л╫2■3 л╫3■4 л╫4■5 л╫5■6 л╫6■7 л╫7■8 л╫8■9 л╫9■: л╫:■; л╫;■< л╫<■= л╫=■> л╫>■? л╫?■л@ л╫л@■лA л╫лA■лB л╫лB■лC л╫лC■лD л╫лD■лE л╫лE■лF л╫лF■лG л╫лG■лH л╫лH■лI л╫лI■лJ л╫лJ■лK л╫лK■лL л╫лL■лM л╫лM■лN л╫лN■лO л╫лO■лP л╫лP■лQ л╫лQ■лR л╫лR■лS л╫лS■лT л╫лT■лU л╫лU■лV л╫лV■лW л╫лW■лX л╫лX■лY л╫лY■лZ л╫лZ■л[ л╫л[■л\ л╫л\■л] л╫л]■л^ л╫л^■л_ л╫л_■л` л╫л`■лa л╫лa■лb л╫лb■лc л╫лc■лd л╫лd■лe л╫лe■лf л╫лf■лg л╫лg■лh л╫лh■лi л╫лi■лj л╫лj■лk л╫лk■лl л╫лl■лm л╫лm■лn л╫лn■лo л╫лo■лp л╫лp■лq л╫лq■лr л╫лr■лs л╫лs■лt л╫лt■лu л╫лu■лv л╫лv■лw л╫лw■лx л╫лx■лy л╫лy■лz л╫лz■л{ л╫л{■л| л╫л|■л} л╫л}■л~ л╫л~■л л╫л■л─ л╫л─■л│ л╫л│э |■  л╬ ■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■	 л╬	■
- л╬
-■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■ л╬■  л╬ ■! л╬!■" л╬"■# л╬#■$ л╬$■% л╬%■& л╬&■' л╬'■( л╬(■) л╬)■* л╬*■+ л╬+■, л╬,■- л╬-■. л╬.■/ л╬/■0 л╬0■1 л╬1■2 л╬2■3 л╬3■4 л╬4■5 л╬5■6 л╬6■7 л╬7■8 л╬8■9 л╬9■: л╬:■; л╬;■< л╬<■= л╬=■> л╬>■? л╬?■л@ л╬л@■лA л╬лA■лB л╬лB■лC л╬лC■лD л╬лD■лE л╬лE■лF л╬лF■лG л╬лG■лH л╬лH■лI л╬лI■лJ л╬лJ■лK л╬лK■лL л╬лL■лM л╬лM■лN л╬лN■лO л╬лO■лP л╬лP■лQ л╬лQ■лR л╬лR■лS л╬лS■лT л╬лT■лU л╬лU■лV л╬лV■лW л╬лW■лX л╬лX■лY л╬лY■лZ л╬лZ■л[ л╬л[■л\ л╬л\■л] л╬л]■л^ л╬л^■л_ л╬л_■л` л╬л`■лa л╬лa■лb л╬лb■лc л╬лc■лd л╬лd■лe л╬лe■лf л╬лf■лg л╬лg■лh л╬лh■лi л╬лi■лj л╬лj■лk л╬лk■лl л╬лl■лm л╬лm■лn л╬лn■лo л╬лo■лp л╬лp■лq л╬лq■лr л╬лr■лs л╬лs■лt л╬лt■лu л╬лu■лv л╬лv■лw л╬лw■лx л╬лx■лy л╬лy■лz л╬лz■л{ л╬л{э S■  л© ■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■	 л©	■
- л©
-■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■ л©■  л© ■! л©!■" л©"■# л©#■$ л©$■% л©%■& л©&■' л©'■( л©(■) л©)■* л©*■+ л©+■, л©,■- л©-■. л©.■/ л©/■0 л©0■1 л©1■2 л©2■3 л©3■4 л©4■5 л©5■6 л©6■7 л©7■8 л©8■9 л©9■: л©:■; л©;■< л©<■= л©=■> л©>■? л©?■л@ л©л@■лA л©лA■лB л©лB■лC л©лC■лD л©лD■лE л©лE■лF л©лF■лG л©лG■лH л©лH■лI л©лI■лJ л©лJ■лK л©лK■лL л©лL■лM л©лM■лN л©лN■лO л©лO■лP л©лP■лQ л©лQ■лR л©лRэ ■  лю ■ лю■ лю■ лю■ лю■ лю■ лю■ лю■ лю■	 лю	■
- лю
-■ лю■ лю■ лю■ лю■ лю■ лю■ люэ F■  ла ■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■	 ла	■
- ла
-■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■ ла■  ла ■! ла!■" ла"■# ла#■$ ла$■% ла%■& ла&■' ла'■( ла(■) ла)■* ла*■+ ла+■, ла,■- ла-■. ла.■/ ла/■0 ла0■1 ла1■2 ла2■3 ла3■4 ла4■5 ла5■6 ла6■7 ла7■8 ла8■9 ла9■: ла:■; ла;■< ла<■= ла=■> ла>■? ла?■л@ лал@■лA лалA■лB лалB■лC лалC■лD лалD■лE лалEэ u■  лб ■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■	 лб	■
- лб
-■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■ лб■  лб ■! лб!■" лб"■# лб#■$ лб$■% лб%■& лб&■' лб'■( лб(■) лб)■* лб*■+ лб+■, лб,■- лб-■. лб.■/ лб/■0 лб0■1 лб1■2 лб2■3 лб3■4 лб4■5 лб5■6 лб6■7 лб7■8 лб8■9 лб9■: лб:■; лб;■< лб<■= лб=■> лб>■? лб?■л@ лбл@■лA лблA■лB лблB■лC лблC■лD лблD■лE лблE■лF лблF■лG лблG■лH лблH■лI лблI■лJ лблJ■лK лблK■лL лблL■лM лблM■лN лблN■лO лблO■лP лблP■лQ лблQ■лR лблR■лS лблS■лT лблT■лU лблU■лV лблV■лW лблW■лX лблX■лY лблY■лZ лблZ■л[ лбл[■л\ лбл\■л] лбл]■л^ лбл^■л_ лбл_■л` лбл`■лa лблa■лb лблb■лc лблc■лd лблd■лe лблe■лf лблf■лg лблg■лh лблh■лi лблi■лj лблj■лk лблk■лl лблl■лm лблm■лn лблn■лo лблo■лp лблp■лq лблq■лr лблr■лs лблs■лt лблtэ R■  лц ■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■	 лц	■
- лц
-■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■ лц■  лц ■! лц!■" лц"■# лц#■$ лц$■% лц%■& лц&■' лц'■( лц(■) лц)■* лц*■+ лц+■, лц,■- лц-■. лц.■/ лц/■0 лц0■1 лц1■2 лц2■3 лц3■4 лц4■5 лц5■6 лц6■7 лц7■8 лц8■9 лц9■: лц:■; лц;■< лц<■= лц=■> лц>■? лц?■л@ лцл@■лA лцлA■лB лцлB■лC лцлC■лD лцлD■лE лцлE■лF лцлF■лG лцлG■лH лцлH■лI лцлI■лJ лцлJ■лK лцлK■лL лцлL■лM лцлM■лN лцлN■лO лцлO■лP лцлP■лQ лцлQэ ╣■  лд ■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■	 лд	■
- лд
-■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■ лд■  лд ■! лд!■" лд"■# лд#■$ лд$■% лд%■& лд&■' лд'■( лд(■) лд)■* лд*■+ лд+■, лд,■- лд-■. лд.■/ лд/■0 лд0■1 лд1■2 лд2■3 лд3■4 лд4■5 лд5■6 лд6■7 лд7■8 лд8■9 лд9■: лд:■; лд;■< лд<■= лд=■> лд>■? лд?■л@ лдл@■лA лдлA■лB лдлB■лC лдлC■лD лдлD■лE лдлE■лF лдлF■лG лдлG■лH лдлH■лI лдлI■лJ лдлJ■лK лдлK■лL лдлL■лM лдлM■лN лдлN■лO лдлO■лP лдлP■лQ лдлQ■лR лдлR■лS лдлS■лT лдлT■лU лдлU■лV лдлV■лW лдлW■лX лдлX■лY лдлY■лZ лдлZ■л[ лдл[■л\ лдл\■л] лдл]■л^ лдл^■л_ лдл_■л` лдл`■лa лдлa■лb лдлb■лc лдлc■лd лдлd■лe лдлe■лf лдлf■лg лдлg■лh лдлh■лi лдлi■лj лдлj■лk лдлk■лl лдлl■лm лдлm■лn лдлn■лo лдлo■лp лдлp■лq лдлq■лr лдлr■лs лдлs■лt лдлt■лu лдлu■лv лдлv■лw лдлw■лx лдлx■лy лдлy■лz лдлz■л{ лдл{■л| лдл|■л} лдл}■л~ лдл~■л лдл■л─ лдл─■л│ лдл│■л┌ лдл┌■л┐ лдл┐■л└ лдл└■л┘ лдл┘■л├ лдл├■л┤ лдл┤■л┬ лдл┬■л┴ лдл┴■л┼ лдл┼■л▀ лдл▀■л▄ лдл▄■л█ лдл█■л▌ лдл▌■л▐ лдл▐■л░ лдл░■л▒ лдл▒■л▓ лдл▓■л⌠ лдл⌠■л■ лдл■■л∙ лдл∙■л√ лдл√■л≈ лдл≈■л≤ лдл≤■л≥ лдл≥■л  лдл ■л⌡ лдл⌡■л° лдл°■л² лдл²■л· лдл·■л÷ лдл÷■л═ лдл═■л║ лдл║■л╒ лдл╒■лё лдлё■л╓ лдл╓■л╔ лдл╔■л╕ лдл╕■л╖ лдл╖■л╗ лдл╗■л╘ лдл╘■л╙ лдл╙■л╚ лдл╚■л╛ лдл╛■л╜ лдл╜■л╝ лдл╝■л╞ лдл╞■л╟ лдл╟■л╠ лдл╠■л╡ лдл╡■лЁ лдлЁ■л╢ лдл╢⌡■  ле ■ ле■ ле■ ле■ ле■ ле■ ле■ ле■ ле■	 ле	■
- ле
-э ■  лф ■ лф■ лф■ лф■ лф■ лф■ лф■ лф■ лф■	 лф	■
- лф
-■ лф■ лф■ лф■ лф■ лфэ ■  лг ■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■	 лг	■
- лг
-■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг■ лг≥■  лх ■ лх■ лх■ лх■ лх■ лх■ лх■ лх■ лхэ z■  ли ■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■	 ли	■
- ли
-■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■ ли■  ли ■! ли!■" ли"■# ли#■$ ли$■% ли%■& ли&■' ли'■( ли(■) ли)■* ли*■+ ли+■, ли,■- ли-■. ли.■/ ли/■0 ли0■1 ли1■2 ли2■3 ли3■4 ли4■5 ли5■6 ли6■7 ли7■8 ли8■9 ли9■: ли:■; ли;■< ли<■= ли=■> ли>■? ли?■л@ лил@■лA лилA■лB лилB■лC лилC■лD лилD■лE лилE■лF лилF■лG лилG■лH лилH■лI лилI■лJ лилJ■лK лилK■лL лилL■лM лилM■лN лилN■лO лилO■лP лилP■лQ лилQ■лR лилR■лS лилS■лT лилT■лU лилU■лV лилV■лW лилW■лX лилX■лY лилY■лZ лилZ■л[ лил[■л\ лил\■л] лил]■л^ лил^■л_ лил_■л` лил`■лa лилa■лb лилb■лc лилc■лd лилd■лe лилe■лf лилf■лg лилg■лh лилh■лi лилi■лj лилj■лk лилk■лl лилl■лm лилm■лn лилn■лo лилo■лp лилp■лq лилq■лr лилr■лs лилs■лt лилt■лu лилu■лv лилv■лw лилw■лx лилx■лy лилyэ -■  лй ■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■	 лй	■
- лй
-■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■ лй■  лй ■! лй!■" лй"■# лй#■$ лй$■% лй%■& лй&■' лй'■( лй(■) лй)■* лй*■+ лй+■, лй,э g■  лк ■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■	 лк	■
- лк
-■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■ лк■  лк ■! лк!■" лк"■# лк#■$ лк$■% лк%■& лк&■' лк'■( лк(■) лк)■* лк*■+ лк+■, лк,■- лк-■. лк.■/ лк/■0 лк0■1 лк1■2 лк2■3 лк3■4 лк4■5 лк5■6 лк6■7 лк7■8 лк8■9 лк9■: лк:■; лк;■< лк<■= лк=■> лк>■? лк?■л@ лкл@■лA лклA■лB лклB■лC лклC■лD лклD■лE лклE■лF лклF■лG лклG■лH лклH■лI лклI■лJ лклJ■лK лклK■лL лклL■лM лклM■лN лклN■лO лклO■лP лклP■лQ лклQ■лR лклR■лS лклS■лT лклT■лU лклU■лV лклV■лW лклW■лX лклX■лY лклY■лZ лклZ■л[ лкл[■л\ лкл\■л] лкл]■л^ лкл^■л_ лкл_■л` лкл`■лa лклa■лb лклb■лc лклc■лd лклd■лe лклe■лf лклf≥■  лл ■ лл■ лл■ лл■ лл■ лл■ лл■ лл■ ллэ #■  лм ■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■	 лм	■
- лм
-■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■ лм■  лм ■! лм!■" лм"э *■  лн ■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■	 лн	■
- лн
-■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■ лн■  лн ■! лн!■" лн"■# лн#■$ лн$■% лн%■& лн&■' лн'■( лн(■) лн)э )■  ло ■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■	 ло	■
- ло
-■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■ ло■  ло ■! ло!■" ло"■# ло#■$ ло$■% ло%■& ло&■' ло'■( ло(э (■  лп ■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■	 лп	■
- лп
-■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■ лп■  лп ■! лп!■" лп"■# лп#■$ лп$■% лп%■& лп&■' лп'э -■  ля ■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■	 ля	■
- ля
-■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■ ля■  ля ■! ля!■" ля"■# ля#■$ ля$■% ля%■& ля&■' ля'■( ля(■) ля)■* ля*■+ ля+■, ля,э ,■  лр ■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■	 лр	■
- лр
-■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■ лр■  лр ■! лр!■" лр"■# лр#■$ лр$■% лр%■& лр&■' лр'■( лр(■) лр)■* лр*■+ лр+э l■  лс ■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■	 лс	■
- лс
-■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■ лс■  лс ■! лс!■" лс"■# лс#■$ лс$■% лс%■& лс&■' лс'■( лс(■) лс)■* лс*■+ лс+■, лс,■- лс-■. лс.■/ лс/■0 лс0■1 лс1■2 лс2■3 лс3■4 лс4■5 лс5■6 лс6■7 лс7■8 лс8■9 лс9■: лс:■; лс;■< лс<■= лс=■> лс>■? лс?■л@ лсл@■лA лслA■лB лслB■лC лслC■лD лслD■лE лслE■лF лслF■лG лслG■лH лслH■лI лслI■лJ лслJ■лK лслK■лL лслL■лM лслM■лN лслN■лO лслO■лP лслP■лQ лслQ■лR лслR■лS лслS■лT лслT■лU лслU■лV лслV■лW лслW■лX лслX■лY лслY■лZ лслZ■л[ лсл[■л\ лсл\■л] лсл]■л^ лсл^■л_ лсл_■л` лсл`■лa лслa■лb лслb■лc лслc■лd лслd■лe лслe■лf лслf■лg лслg■лh лслh■лi лслi■лj лслj■лk лслk≈■  лт ■ лт■ лт■ лт■ лт■ лт■ лт∙■  лу ■ лу■ лу■ лу■ лу⌠■  лж ■ лж■ лж▓■  лв ■ лвэ ■  ль ■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■	 ль	■
- ль
-■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль■ ль░░▒ы█D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\report\OhReport.js▒з-4/*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import SysTestKit from '../kit/SysTestKit';
-import { collectCoverageData } from '../coverage/coverageCollect';
-import { TAG, PrintTag } from '../../Constant';
-
-class OhReport {
-  constructor(attr) {
-    this.delegator = attr.delegator;
-    this.abilityDelegatorArguments = attr.abilityDelegatorArguments;
-    this.id = 'report';
-    this.index = 0;
-    this.duration = 0;
-    this.currentThreadName = 'mainThread';
-  }
-
-  init(coreContext) {
-    this.coreContext = coreContext;
-    this.suiteService = this.coreContext.getDefaultService('suite');
-    this.specService = this.coreContext.getDefaultService('spec');
-    if (SysTestKit.workerPort !== null) {
-      this.currentThreadName = SysTestKit.workerPort.name;
-    }
-  }
-
-  taskStart() {
-  }
-
-  async taskDone() {
-    let summary = this.suiteService.getSummary();
-    if (this.abilityDelegatorArguments !== null) {
-      this.taskDoneTime = new Date().getTime();
-      const configService = this.coreContext.getDefaultService('config');
-      const suiteService = this.coreContext.getDefaultService('suite');
-      const specService = this.coreContext.getDefaultService('spec');
-      if (configService['coverage'] === 'true') {
-        await collectCoverageData();
-      }
-      let message = '\n' + `${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ` + summary.total + ', Failure: ' + summary.failure;
-      message += ', Error: ' + summary.error;
-      message += ', Pass: ' + summary.pass;
-      message += ', Ignore: ' + summary.ignore;
-      if (specService.skipSpecNum > 0) {
-        message += ', SkipSpec: ' + specService.skipSpecNum;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_CODE}: ` + (summary.failure > 0 ? -1 : 0) + '\n';
-      let isHasError = summary.failure > 0 || summary.error > 0;
-      let config = this.coreContext.getDefaultService('config');
-      if (config.isBreakOnError() && isHasError) {
-        // Ф°╙Ф┴╖Х║▄Е┘╗И┐╗Х╞╢Ф≤▌
-        message += '\n' + `${PrintTag.OHOS_REPORT_RESULT}: breakOnError model, Stopping whole test suite if one specific test case failed or error` + '\n';
-      }
-      message += `${PrintTag.OHOS_REPORT_STATUS}: taskconsuming=` + summary.duration + '\n';
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-    }
-    if (SysTestKit.workerPort === null || SysTestKit.workerPort === undefined) {
-      // Д╦╩Г╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░ Г╩⌠Ф²÷Д╩╩Е┼║Ц─┌
-      console.info(`${TAG}report print success`);
-      this.delegator.finishTest('your test finished!!!', 0, () => { });
-    } else {
-      // workerГ╨©Г╗▀Ф┴╖Х║▄Е╝▄Ф┬░Е╟├Ф∙╟Ф█╝Е▐▒И─│Е┬╟Д╦╩Г╨©Г╗▀Д╦╜Ц─┌
-      let sendData = {
-        currentThreadName: this.currentThreadName,
-        summary: summary
-      };
-      console.info(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
-      SysTestKit.workerPort.postMessage(sendData);
-    }
-  }
-
-  incorrectFormat() {
-    if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
-      var value = this.coreContext.getDefaultService('config').filterValid;
-      var message = 'this param ' + value.join(',') + ' is invalid' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-
-  incorrectTestSuiteFormat() {
-    if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
-      let value = this.coreContext.getDefaultService('config').filterXdescribe;
-      let message = 'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
-    }
-  }
-  async suiteStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let specArr = [];
-      this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
-      let message = '\n' + `${PrintTag.OHOS_REPORT_SUM}: ` + specArr.length;
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc() + '\n';
-      if (this.suiteService.currentRunningSuite.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
-    }
-  }
-
-  async suiteDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), currentRunningSuite, '');
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason;
-      }
-      const isPromiseError = currentRunningSuite.isPromiseError;
-      if (isPromiseError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
-      }
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + currentRunningSuite.duration;
-      if (currentRunningSuite.hookError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
-      }
-      message += '\n';
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
-    }
-  }
-
-  async specStart() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (++this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 1` + '\n';
-      if (this.specService.currentRunningSpec.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
-      }
-      if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      await SysTestKit.print(message);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
-    }
-  }
-
-  async specDone() {
-    if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (this.index);
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      let messageStack = '';
-      let messageCode = '';
-      if (this.specService.currentRunningSpec.error) {
-        messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
-      } else if (this.specService.currentRunningSpec) {
-        if (this.specService.currentRunningSpec.fail) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
-        } else {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-          messageCode += this.specService.currentRunningSpec.isSkip ? (`${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n') : '';
-        }
-      } else {
-        messageCode += '\n';
-      }
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
-      if (SysTestKit.workerPort !== null) {
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
-      }
-      console.info(`${message}`);
-      console.info(`\n${messageStack}`);
-      console.info(`\n${messageCode}`);
-      await SysTestKit.print(message);
-      await SysTestKit.print(messageStack);
-      await SysTestKit.print(messageCode);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specDone end print success`);
-    }
-  }
-}
-
-export default OhReport;
-тrF⌠╠../kit/SysTestKit╝../../Constant╩../coverage/coverageCollectтrG≈╙assertions╗external╒id╓meta╠moduleSideEffects╙resolvedBy╣syntheticNamedExportsAбы▄D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\kit\SysTestKit.jsAц╙oh-resolveбGAбыD:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\Constant.jsAц╙oh-resolveбGAбы√D:\HMProject\CalculatorV0_1\graph-math-engine\oh_modules\.ohpm\@ohos+hypium@1.0.24\oh_modules\@ohos\hypium\src\main\module\coverage\coverageCollect.jsAц╙oh-resolveб▒тrH▓╖missing╕pluginц╕genAbcб░т  тrI■╡dynamicImportCache╧exportAllDeclarationCache╩exportNamedDeclarationCache╚importCache░░░⌠тrJ∙╓type╔startёend╙specifiers╕source╠ImportDeclarationмuм═▒тrK■╓type╔startёend╔local╤ImportDefaultSpecifierм|м├тrL■╓type╔startёend╓name╙Identifierм|м├╙SysTestKitтrM∙╓type╔startёend╔valueёraw╖Literalм▄м÷╠../kit/SysTestKitЁ'../kit/SysTestKit'J╠ImportDeclarationм╒мД▒тrN∙╓type╔startёend╗imported╔local╞ImportSpecifierм╚м╬L╙Identifierм╚м╬ЁcollectCoverageDataL╙Identifierм╚м╬ЁcollectCoverageDataM╖LiteralмфмЦ╩../coverage/coverageCollect╫'../coverage/coverageCollect'J╠ImportDeclarationмФм▓N╞ImportSpecifierмОмРL╙IdentifierмОмРёTAGL╙IdentifierмОмРёTAGN╞ImportSpecifierмТмЭL╙IdentifierмТмЭ╗PrintTagL╙IdentifierмТмЭ╗PrintTagM╖Literalмм╝../../Constant╟'../../Constant'
