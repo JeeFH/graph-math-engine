@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **平移结束、快照运镜、点击曲线切焦点时的卡顿**：全网格等值线提取原先挂在 `extractVisible` 的脏标记分支上，而 `extractVisible` 由手势回调里的 `draw()` 调用，等价于在 UI 线程上同步跑完整个网格的 AMR 递归。现提取改由 `pumpExtraction` 在帧间推进，`extractVisible` 变为纯查询。
 - `FunctionEvaluator` 求值热路径不再抛异常（原先抛 `[GRAPH_DOMAIN]`/`[GRAPH_OVERFLOW]` 会触发完整栈追踪构建），统一返回 NaN，与 `BivariateEvaluator` 既有契约对齐。
 - `ExpressionSimplifier` 开启数字因子折叠后，`2·3x` 归一为 `6x`；`VstSerializer` 把 `·` 归一为 `*`，从产出端消除"自身产出下游词法器读不懂的 token"这一整类问题。
+- **段数上限改为按画布像素推导**，取代固定常数 200000。实测 `sin(x·y)` 在 400×400 网格下段数稳定顶到 200000，而 1080px 画布根本无法分辨这个量级；后果是每次 `pumpExtraction` 后的 `draw()` 都要重绘全部累积段，多轮泵入叠加后形成远超单帧预算的主线程占用，且 20 万个 `LineSegment` 常驻叠加每帧新建结果数组，GC 压力显著。现由 `SegmentCaps.of(pixelWorldDx, worldWidth)` 推导（16 段/像素，1080px → 硬上限 17280、软上限 8640，下限 2048），超限行为与软上限一致：降 AMR 深度、以更粗密度覆盖更大范围，曲线仍连续。`SEGMENT_SOFT_CAP`/`SEGMENT_HARD_CAP` 降级为上钳位常数，不再是实际生效值。
 
 ### Added
 
@@ -47,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `calcengine-graph`：
   - `ExprNormalizer`：词法前置归一化（Unicode 乘除号族、全角标点/数字/字母、不可见字符 + `root(n,b)` 模板改写）。幂等。
   - `EngineFunctions`：函数名表与实现的**单点定义**（原先在 `FunctionEvaluator`、`BivariateEvaluator`、`ExprClassifier` 三处各有一份且逐处遗漏）。新增 `cbrt`；`powReal` 提供实数域幂语义；`toRational` 提供连分数有理重构。
-  - `ExtractionBudget`：分帧提取的三重预算（单元格行数 / 探针求值次数 / 墙钟），含 `gesture()` 与 `idle()` 两档；配套 `SEGMENT_SOFT_CAP`（降 AMR 深度）与 `SEGMENT_HARD_CAP`（截断）。
+  - `ExtractionBudget`：分帧提取的三重预算（单元格行数 / 探针求值次数 / 墙钟），含 `gesture()` 与 `idle()` 两档。
+  - `SegmentCaps`：由视口与像素尺度推导的段数软/硬上限（见 Fixed 末条）。
   - `IRenderer` 的 `IChunkedGridRenderer` 扩展 `isGridReady` / `hasPendingExtraction` / `pumpExtraction` / `refreshExtraction` / `commitPendingPrecision`。
   - `RenderDispatcher` 新增 `pumpExtractions(budget, vp)` 与 `hasPendingExtraction()`；`onViewportChange` 改为只登记目标精度，避免运镜动画每帧重置提取游标。
   - `GridSampleEngine2D.extendCache` 改为返回 `GridExtendResult`（回报四向新增格数），使视口平移后只提取新增条带。
@@ -60,7 +62,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Issues
 
-- **`sin(x·y)` 仍可能长时间阻塞**。已修复的提取路径不再阻塞 UI，但**网格构建期的奇点检测**（`cellHasPole`，每候选格最多 13 次探针求值）成本未纳入任何预算，仅由 `CHUNK_ROWS` 间接控制；对振荡函数"四角变号"的候选格占比极高，成本随格数放大。待诊断后修复（下次补丁版）。
+- **`sin(x·y)` 的曲线会大面积缺失（正确性问题，已定量）**。奇点检测 `cellHasPole` 用"单元格四角"作参照，而 `sin` 值域有界、四角接近零时任何中等大小的探针都会"相对吹起"，导致真实曲线格被误判为极点而跳过。实测（400×400 网格，`sin(x·y)`）：
+
+  | 视口半径 R | 候选格 | 误判为极点 | 误判率 |
+  |---|---|---|---|
+  | 5 | 25,474 | 0 | 0% |
+  | 10 | 100,514 | 3,292 | 3.3% |
+  | ≥20 | ~135,000 | ~104,000 | **76–79%** |
+
+  即 R≥20 时约四分之三的曲线格被跳过。
+
+  **已试并否决的方案**：改用"网格幅值包络"作参照。实测对 `sin(x·y)` 误判率降到 0.0%，但 `tan(x)` 的真极点检出率从 **76.9% 掉到 0.0%**（`tan` 的包络被极点附近节点抬高，阈值随之失效）——以伪影回归换误判消除，不可接受；且探针成本反而翻倍（538,794 → 991,762，因为当前 79% 的提前 return 实际是成本上的捷径）。
+  后续方向：改用采样验证（对候选格加密子采样，按"是否随采样密度持续吹起"判定发散），或引入函数连续性/奇点结构的先验。
+- **网格构建期的奇点检测成本未纳入预算**。`fillGridChunk` 的成本仅由 `maxNodeRows` 间接控制。实测 `sin(x·y)` 单次全量构建约 1.38M 次求值：网格填充 160,801（固定）+ 奇点探针 ~620,000（45%，最大单项）+ AMR ~570,000。按 `CHUNK_ROWS=64` 切分后单块约 118,000 次求值同步执行，是残余卡顿的来源。
 - 函数词表在排版层与求值层**双向不一致**：
   - 排版层认识而求值层不认识：`csc` `sec` `cot`（`root` 已由 `ExprNormalizer` 在求值侧补齐）
   - 求值层认识而排版层不认识：`cbrt` `exp` `round` `sign` `factorial`

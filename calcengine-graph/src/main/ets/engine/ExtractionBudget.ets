@@ -43,10 +43,70 @@
  * 3. 段数硬上限 → 截断并标记（内存有界）。
  */
 
-/** 段数软上限：越过后 AMR 深度降级，用更粗的线段密度换取覆盖更大范围 */
+/**
+ * 段数上限的绝对边界（仅作上钳位，实际取值由 SegmentCaps.of 按画布像素推导）。
+ * 这两个常数不再是实际生效值，保留为“永不越过的天花板”。
+ */
 export const SEGMENT_SOFT_CAP: number = 60000;
-/** 段数硬上限：越过后停止提取并置 truncated，保证内存有界 */
 export const SEGMENT_HARD_CAP: number = 200000;
+
+/**
+ * 每个画布像素列允许的最大段数。
+ *
+ * 取值权衡：一个铺满视口的普通曲线（如圆 x²+y²=4）在 400x400 网格下本就产出
+ * 约 2500 段；取 4 会让它在软上限处就被降质，属误伤。取 16（1080px 画布 →
+ * 硬上限 17280 段）既留下充足余量使正常曲线全速完整提取，又把病态情形
+ * （实测 sin(x*y) 顶到 200000）砍掉一个数量级以上。
+ */
+const SEGMENTS_PER_CANVAS_PX: number = 16;
+/** 段数下限：极小画布或异常视口下仍保证曲线成形 */
+const SEGMENT_CAP_FLOOR: number = 2048;
+
+/**
+ * 由视口与像素尺度推导的段数上限。
+ *
+ * 背景（实测）：原先使用固定硬上限 200000。对 1080px 宽的画布，相当于每像素列
+ * 185 段，远超可分辨限度；实测 sin(x*y) 在 400x400 网格下段数稳定顶到 200000。
+ * 后果有二：
+ * 1. 每次 pumpExtraction 后的 draw() 要重绘全部累积段，开销随段数线性增长，
+ *    多轮 pump 叠加后形成远超单帧预算的主线程占用；
+ * 2. 20 万个 LineSegment 对象常驻，叠加每帧新建的结果数组，GC 压力显著。
+ *
+ * 因此上限应由“画布能分辨多少段”决定，而不应由“愿意分配多少内存”决定。
+ * 超出后行为与软上限一致：降 AMR 深度、以更粗密度覆盖更大范围（曲线仍连续）。
+ */
+export class SegmentCaps {
+  /** 软上限：越过后 AMR 深度降级 */
+  readonly soft: number;
+  /** 硬上限：越过后停止提取并置 truncated */
+  readonly hard: number;
+
+  constructor(soft: number, hard: number) {
+    this.soft = soft;
+    this.hard = hard;
+  }
+
+  /**
+   * @param pixelWorldDx 单像素对应的世界坐标间距（<=0 或非有限时退回默认画布宽度）
+   * @param worldWidth 当前视口的世界坐标宽度
+   */
+  static of(pixelWorldDx: number, worldWidth: number): SegmentCaps {
+    let canvasPx: number = 400;
+    if (pixelWorldDx > 0 && worldWidth > 0) {
+      const px: number = worldWidth / pixelWorldDx;
+      if (isFinite(px) && px > 0) {
+        canvasPx = px;
+      }
+    }
+    let hard: number = Math.round(canvasPx * SEGMENTS_PER_CANVAS_PX);
+    if (hard < SEGMENT_CAP_FLOOR) hard = SEGMENT_CAP_FLOOR;
+    if (hard > SEGMENT_HARD_CAP) hard = SEGMENT_HARD_CAP;
+    let soft: number = Math.round(hard / 2);
+    if (soft < SEGMENT_CAP_FLOOR / 2) soft = Math.round(SEGMENT_CAP_FLOOR / 2);
+    if (soft > SEGMENT_SOFT_CAP) soft = SEGMENT_SOFT_CAP;
+    return new SegmentCaps(soft, hard);
+  }
+}
 
 /**
  * 单次提取泵入的预算。

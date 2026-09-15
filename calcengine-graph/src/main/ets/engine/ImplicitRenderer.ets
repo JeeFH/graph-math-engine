@@ -60,7 +60,7 @@ import { BivariateEvaluator } from './BivariateEvaluator';
 import { GridCache2D } from './GridCache2D';
 import { GridSampleEngine2D, GridExtendResult } from './GridSampleEngine2D';
 import { IChunkedGridRenderer, RenderData, RenderMode, LineSegment } from './IRenderer';
-import { ExtractionBudget, SEGMENT_SOFT_CAP, SEGMENT_HARD_CAP } from './ExtractionBudget';
+import { ExtractionBudget, SegmentCaps } from './ExtractionBudget';
 
 /** 缓冲扩展比例 */
 const BUFFER_RATIO: number = 0.5;
@@ -406,8 +406,10 @@ export class ImplicitRenderer implements IChunkedGridRenderer {
     if (budget.shouldStop()) return false;
     const pwDx: number = this.buildPixelDx > 0 ?
       this.buildPixelDx : (vp.xMax - vp.xMin) / 400;
+    // 段数上限按画布像素推导（而非固定 200000）：每轮泵入都重算，使缩放后立即生效。
+    const caps: SegmentCaps = SegmentCaps.of(pwDx, vp.xMax - vp.xMin);
     // 段数越过软上限 → 降低 AMR 深度，用密度换覆盖面（曲线仍连续，无断裂伪影）
-    const maxDepth: number = (this.segmentCount >= SEGMENT_SOFT_CAP) ?
+    const maxDepth: number = (this.segmentCount >= caps.soft) ?
       AMR_DEGRADED_DEPTH : AMR_MAX_DEPTH;
     const stride: number = cache.cols + 1;
     const poleFlags: number[] | null = cache.poleFlags;
@@ -453,8 +455,8 @@ export class ImplicitRenderer implements IChunkedGridRenderer {
         budget.countRow();
       }
 
-      // 硬上限：内存有界优先于画面完整
-      if (this.segmentCount >= SEGMENT_HARD_CAP) {
+      // 硬上限：内存与帧期重绘开销有界优先于画面完整
+      if (this.segmentCount >= caps.hard) {
         this.truncated = true;
         this.pendingRects = [];
         this.curRect = null;

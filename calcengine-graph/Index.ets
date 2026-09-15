@@ -45,7 +45,7 @@ export { RenderMode, renderModeLabel } from './src/main/ets/engine/IRenderer';
 export type { RenderData, LineSegment, Polygon } from './src/main/ets/engine/IRenderer';
 
 // ── 提取预算（分帧可中断提取的调度参数，宿主驱动 pumpExtractions 时使用）──
-export { ExtractionBudget } from './src/main/ets/engine/ExtractionBudget';
+export { ExtractionBudget, SegmentCaps, SEGMENT_SOFT_CAP, SEGMENT_HARD_CAP } from './src/main/ets/engine/ExtractionBudget';
 
 // ── 采样引擎与缓存 ──
 export { SampleEngine } from './src/main/ets/engine/SampleEngine';

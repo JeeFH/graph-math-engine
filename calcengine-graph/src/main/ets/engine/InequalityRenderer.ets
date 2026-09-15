@@ -49,7 +49,7 @@ import { GridCache2D } from './GridCache2D';
 import { GridSampleEngine2D, GridExtendResult } from './GridSampleEngine2D';
 import { IChunkedGridRenderer, RenderData, RenderMode, LineSegment, Polygon, Point2D } from './IRenderer';
 import { InequalityDirection } from './ExprClassifier';
-import { ExtractionBudget, SEGMENT_SOFT_CAP, SEGMENT_HARD_CAP } from './ExtractionBudget';
+import { ExtractionBudget, SegmentCaps } from './ExtractionBudget';
 
 /** 缓冲扩展比例 */
 const BUFFER_RATIO: number = 0.5;
@@ -409,7 +409,9 @@ export class InequalityRenderer implements IChunkedGridRenderer {
     this.extractCenterY = (vp.yMin + vp.yMax) * 0.5;
     const pwDx: number = this.buildPixelDx > 0 ?
       this.buildPixelDx : (vp.xMax - vp.xMin) / 400;
-    const maxDepth: number = (this.itemCount >= SEGMENT_SOFT_CAP) ?
+    // 段数上限按画布像素推导（而非固定 200000），与 ImplicitRenderer 同源策略
+    const caps: SegmentCaps = SegmentCaps.of(pwDx, vp.xMax - vp.xMin);
+    const maxDepth: number = (this.itemCount >= caps.soft) ?
       AMR_DEGRADED_DEPTH : AMR_MAX_DEPTH;
     const stride: number = cache.cols + 1;
     const poleFlags: number[] | null = cache.poleFlags;
@@ -446,7 +448,7 @@ export class InequalityRenderer implements IChunkedGridRenderer {
         budget.countRow();
       }
 
-      if (this.itemCount >= SEGMENT_HARD_CAP) {
+      if (this.itemCount >= caps.hard) {
         this.truncated = true;
         this.pendingRects = [];
         this.curRect = null;

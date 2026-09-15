@@ -279,8 +279,10 @@ const done: boolean = dispatcher.pumpExtractions(budget, vp);
 **契约**：
 - `extractVisible`（经 `extractAll`）**不触发提取**，提取未完成的帧返回已提取部分（曲线渐进长出）
 - `pumpExtractions` 在内部统一 `budget.begin()`，多个渲染器共享同一预算窗口，形成全局每帧上限
-- 预算含行数 / 探针求值次数 / 墙钟三重上限；段数另有软上限（降 AMR 深度）与硬上限（截断）
+- 预算含行数 / 探针求值次数 / 墙钟三重上限；段数上限由 `SegmentCaps.of(pixelWorldDx, worldWidth)` 按画布像素推导（16 段/像素，下限 2048），超软上限降 AMR 深度、超硬上限截断并置 `truncated`
 - `ExtractionBudget.gesture()` 取 8 行 / 4 万次 / 6ms；`idle()` 取 32 行 / 20 万次 / 12ms
+
+段数上限的由来：早期实现用固定常数 200000，对 1080px 画布相当于每像素列 185 段，远超可分辨限度，且每次泵入后的重绘开销随累积段数线性增长。现由画布宽度决定，宿主无需自行调参；`SEGMENT_SOFT_CAP`/`SEGMENT_HARD_CAP` 仅为上钳位常数。
 
 ### GraphFunction 类型
 
@@ -462,7 +464,7 @@ export type { ExprStyle, ExprMetrics, DebugMask, GraphKeySpec };
 
 ```typescript
 export { ExprClassifier, FunctionEvaluator, BivariateEvaluator, GlobalAnalyzer, GraphAnalyzer };
-export { RenderMode, renderModeLabel, RenderDispatcher, ExtractionBudget };
+export { RenderMode, renderModeLabel, RenderDispatcher, ExtractionBudget, SegmentCaps };
 export { SampleEngine, GridSampleEngine2D, GridCache2D, FunctionSampleCache };
 export { fmt, fmtPi, formatIntervals, domainTextOf, rangeTextOf, symmetryTextOf };
 export type { ClassifyResult, RenderData, LineSegment, Polygon, GlobalAnalysisResult };
